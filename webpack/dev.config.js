@@ -30,6 +30,7 @@ const baseDevConfig = () => ({
     noInfo: true,
     headers: { "Access-Control-Allow-Origin": "*" }
   },
+  mode: "development",
   hotMiddleware: {
     path: "/js/__webpack_hmr"
   },
@@ -57,10 +58,22 @@ const baseDevConfig = () => ({
     rules: [
       {
         test: /\.js$/,
-        loader: "babel-loader",
-        exclude: /node_modules/,
-        options: {
-          presets: ["env"]
+        exclude: /(node_modules|bower_components)/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: [
+              [
+                "@babel/preset-env",
+                {
+                  targets: {
+                    browsers: ["chrome 66"]
+                  }
+                }
+              ]
+            ],
+            babelrc: false
+          }
         }
       },
       {

@@ -1,25 +1,60 @@
 import { portName, MESSAGE_TYPES } from "./lib/port";
 import _ from "lodash";
+import S3Upload from "react-s3-uploader/s3upload";
 const bluebird = require("bluebird");
+
+const SCREENSHOT_CONTENT_TYPE = "image/png";
 
 global.Promise = bluebird;
 
 const buildURL = path => {
-  `http://localhost:3001${path}`;
+  return `http://localhost:3001${path}`;
 };
 
-const fetch = (path, options = {}) => {
-  return window.fetch(buildURL(path), {
-    ...options,
-    credentials: "include",
-    headers: {
-      ...(options.headers || {}),
-      "User-Agent": `StyleURL v${chrome.app.getDetails().version} (${
-        process.env.NODE_ENV
-      })`,
-      "Content-Type": "application/json"
+const toBlob = base64String => {
+  return window.fetch(base64String).then(res => res.blob());
+};
+
+const toFile = async base64String => {
+  const blob = await toBlob(base64String);
+
+  Object.defineProperty(blob, "name", {
+    get: function() {
+      return "photo.png";
     }
   });
+
+  Object.defineProperty(blob, "type", {
+    get: function() {
+      return SCREENSHOT_CONTENT_TYPE;
+    }
+  });
+
+  return blob;
+};
+
+const uploaders = {};
+
+const fetch = (path, options = {}) => {
+  return window
+    .fetch(buildURL(path), {
+      ...options,
+      credentials: "include",
+      headers: {
+        ...(options.headers || {}),
+        "User-Agent": `StyleURL v${chrome.app.getDetails().version} (${
+          process.env.NODE_ENV
+        })`,
+        "Content-Type": "application/json"
+      }
+    })
+    .then(response => response.json())
+    .catch(error => {
+      console.error(error);
+      return {
+        success: false
+      };
+    });
 };
 
 const uploadStylesheets = ({ stylesheets, url }) => {
@@ -32,20 +67,41 @@ const uploadStylesheets = ({ stylesheets, url }) => {
   });
 };
 
-function promisifier(method) {
-  // return a function
-  return function promisified(...args) {
-    // which returns a promise
-    return new Promise(resolve => {
-      args.push(resolve);
-      method.apply(this, args);
-    });
-  };
-}
+const processScreenshot = ({
+  key: stylesheet_key,
+  domain: stylesheet_domain
+}) => ({ publicUrl: url }) => {
+  return fetch("/api/photos/process", {
+    method: "POST",
+    body: JSON.stringify({
+      url,
+      stylesheet_key,
+      stylesheet_domain,
+      content_type: SCREENSHOT_CONTENT_TYPE
+    })
+  }).then(() => {
+    delete uploaders[stylehseet_key];
+  });
+};
 
-function promisifyAll(obj, list) {
-  list.forEach(api => bluebird.promisifyAll(obj[api], { promisifier }));
-}
+const uploadScreenshot = ({ key, domain, photo }) => {
+  uploaders[key] = new S3Upload({
+    files: [photo],
+    signingUrl: "/api/photos/presign",
+    onFinishS3Put: processScreenshot({ key, domain }),
+    onError: error => {
+      console.error(error);
+      delete uploaders[key];
+    },
+    server: "http://localhost:3001",
+    uploadRequestHeaders: {}
+  });
+};
+
+const getTab = tabId =>
+  new Promise((resolve, reject) => {
+    chrome.tabs.get(tabId, resolve);
+  });
 
 const handleMessage = async request => {
   if (!request.type) {
@@ -62,7 +118,8 @@ const handleMessage = async request => {
 
   if (request.type === MESSAGE_TYPES.get_styles_diff) {
     console.log("[background] REceived styles!");
-    const tab = await chrome.tabs.get(request.tabId);
+
+    const tab = await getTab(request.tabId);
 
     if (!tab || !tab.url) {
       alert("Something didnt work quite right. Please try again!");
@@ -72,10 +129,19 @@ const handleMessage = async request => {
     const stylesheetResponse = await uploadStylesheets({
       stylesheets: request.value.stylesheets,
       url: tab.url
-    }).then(response => response.json());
+    });
 
     if (stylesheetResponse.success) {
-      chrome.tabs.create({ url: stylesheetResponse.data.url });
+      chrome.tabs.captureVisibleTab(null, { format: "png" }, async function(
+        photo
+      ) {
+        chrome.tabs.create({ url: stylesheetResponse.data.url });
+        await uploadScreenshot({
+          photo: await toFile(photo),
+          key: stylesheetResponse.data.id,
+          domain: stylesheetResponse.data.domain
+        });
+      });
     } else {
       alert("Something didnt work quite right. Please try again!");
     }
@@ -103,3 +169,4 @@ const createStyleURL = tab => {
 };
 
 chrome.browserAction.onClicked.addListener(createStyleURL);
+chrome.runtime.onMessage.addListener(handleMessage);

@@ -11,5 +11,6 @@ export const portName = tabId => {
 };
 
 export const MESSAGE_TYPES = {
-  get_styles_diff: "get_styles_diff"
+  get_styles_diff: "get_styles_diff",
+  apply_stylesheets: "apply_stylesheets"
 };

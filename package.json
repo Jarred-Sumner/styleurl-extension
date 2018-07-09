@@ -2,11 +2,6 @@
   "name": "react-chrome-extension-boilerplate",
   "version": "0.9.0",
   "description": "Boilerplate for Chrome extension React.js project",
-  "babel": {
-    "presets": [
-      "env"
-    ]
-  },
   "scripts": {
     "dev": "node scripts/dev",
     "build": "node scripts/build",
@@ -33,19 +28,7 @@
   "author": "Jhen <developer@jhen.me>",
   "license": "MIT",
   "devDependencies": {
-    "babel-core": "^6.3.15",
-    "babel-eslint": "^7.1.0",
-    "babel-loader": "^6.2.0",
-    "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-plugin-transform-decorators-legacy": "^1.2.0",
-    "babel-plugin-transform-runtime": "^6.5.2",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-es2015": "^6.24.1",
-    "babel-preset-react": "^6.3.13",
-    "babel-preset-react-hmre": "^1.0.0",
-    "babel-preset-react-optimize": "^1.0.1",
-    "babel-preset-stage-0": "^6.3.13",
-    "babel-runtime": "^6.3.19",
+    "babel-loader": "^8.0.0-beta",
     "chai": "^3.2.0",
     "chromedriver": "^2.33.2",
     "cross-env": "^3.1.3",
@@ -68,20 +51,26 @@
     "shelljs": "^0.7.0",
     "sinon": "^1.17.1",
     "style-loader": "^0.13.1",
-    "webpack": "^3.10.0",
+    "webpack": "^4.15.0",
     "webpack-hot-middleware": "^2.10.0",
     "webpack-httpolyglot-server": "^0.3.0"
   },
   "dependencies": {
+    "@babel/core": "^7.0.0-beta.52",
+    "@babel/plugin-transform-runtime": "^7.0.0-beta.52",
+    "@babel/preset-env": "^7.0.0-beta.52",
+    "@babel/runtime": "^7.0.0-beta.52",
     "autoprefixer": "^7.2.5",
     "bluebird": "^3.5.1",
     "classnames": "^2.1.3",
+    "data-uri-to-blob": "^0.0.4",
     "diff-match-patch": "^1.0.1",
     "lodash": "^4.17.10",
     "react": "^15.0.2",
     "react-dock": "^0.2.3",
     "react-dom": "^15.0.2",
     "react-redux": "^4.3.0",
+    "react-s3-uploader": "^4.8.0",
     "redux": "^3.2.1",
     "redux-thunk": "^2.0.1"
   }

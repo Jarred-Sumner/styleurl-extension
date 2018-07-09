@@ -2,42 +2,42 @@ import _ from "lodash";
 import { portName, MESSAGE_TYPES } from "./lib/port";
 import Bluebird from "bluebird";
 
-window.Promise = Bluebird;
-
 let port;
 
 const log = (...messages) => {
-  console.log.call(this, messages);
+  alert(JSON.stringify(messages));
 };
 
 const isResourceStylesheet = resource => {
-  // TODO: make it work with non-inspector stylesheets
-  return (
-    resource.url.startsWith("inspector://") && resource.type === "stylesheet"
-  );
+  const isStylesheet =
+    resource.url.startsWith("inspector://") && resource.type === "stylesheet";
+  return isStylesheet;
 };
 
 const getResources = () =>
-  new Promise(resolve =>
+  new Bluebird((resolve, reject) =>
     chrome.devtools.inspectedWindow.getResources(resources => {
       resolve(resources);
     })
   );
 
-const getStyles = () => {
-  log("[devtools] Get styles");
-  return getResources().then(resources => {
-    return Promise.map(resources.filter(isResourceStylesheet), resource => {
-      return new Promise((resolveContent, reject) => {
-        resource.getContent(content => {
-          resolveContent({
-            url: resource.url,
-            content
-          });
-        });
+const getResourceContent = resource =>
+  new Bluebird((resolve, reject) => {
+    log("GET", resource.url);
+    resource.getContent(content => {
+      resolve({
+        url: resource.url,
+        content
       });
     });
   });
+
+const getStyles = () => {
+  log("[devtools] Get styles");
+  return getResources()
+    .then(resources => resources.filter(isResourceStylesheet))
+    .then(stylesheets => Bluebird.all(stylesheets.map(getResourceContent)))
+    .catch(error => alert(error));
 };
 
 const createPort = () => {
@@ -55,12 +55,13 @@ const handleReceivedMessage = (request, sender, sendResponse) => {
 
   if (request.type === MESSAGE_TYPES.get_styles_diff) {
     return getStyles().then(styles => {
+      log("SENDING", styles.length, "styles");
       port.postMessage({
         type: MESSAGE_TYPES.get_styles_diff,
         tabId: chrome.devtools.inspectedWindow.tabId,
         response: true,
         value: {
-          stylesheets
+          stylesheets: styles
         }
       });
 
@@ -72,17 +73,18 @@ const handleReceivedMessage = (request, sender, sendResponse) => {
 };
 
 const setupPort = () => {
-  if (port) {
-    port.disconnect();
-  }
-
   port = createPort();
-
   port.onMessage.addListener(handleReceivedMessage);
 };
 
 chrome.devtools.network.onNavigated.addListener(function() {
-  setupPort();
+  if (port) {
+    port.disconnect();
+  }
+
+  if (_.isNumber(chrome.devtools.inspectedWindow.tabId)) {
+    setupPort();
+  }
 });
 
 chrome.runtime.onMessage.addListener(handleReceivedMessage);

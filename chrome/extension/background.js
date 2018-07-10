@@ -35,7 +35,7 @@ const toFile = async base64String => {
 
 const uploaders = {};
 
-const fetch = (path, options = {}) => {
+const apiFetch = (path, options = {}) => {
   return window
     .fetch(buildURL(path), {
       ...options,
@@ -57,8 +57,8 @@ const fetch = (path, options = {}) => {
     });
 };
 
-const uploadStylesheets = ({ stylesheets, url }) => {
-  return fetch("/api/stylesheet_groups", {
+const uploadStylesheets = async ({ stylesheets, url }) => {
+  return apiFetch("/api/stylesheet_groups", {
     method: "POST",
     body: JSON.stringify({
       url,
@@ -71,7 +71,7 @@ const processScreenshot = ({
   key: stylesheet_key,
   domain: stylesheet_domain
 }) => ({ publicUrl: url }) => {
-  return fetch("/api/photos/process", {
+  return apiFetch("/api/photos/process", {
     method: "POST",
     body: JSON.stringify({
       url,
@@ -80,7 +80,7 @@ const processScreenshot = ({
       content_type: SCREENSHOT_CONTENT_TYPE
     })
   }).then(() => {
-    delete uploaders[stylehseet_key];
+    delete uploaders[stylesheet_key];
   });
 };
 
@@ -103,13 +103,38 @@ const getTab = tabId =>
     chrome.tabs.get(tabId, resolve);
   });
 
-const handleMessage = async request => {
+const handleMessage = (request, sender, sendResponse) => {
   if (!request.type) {
     console.error(
       "[background] request type must be one of",
       _.values(MESSAGE_TYPES)
     );
     return;
+  }
+
+  if (request.type === MESSAGE_TYPES.get_gist_content) {
+    if (!request.url) {
+      console.error("[background] invalid get_gist_content: missing url");
+      sendResponse({ success: false });
+      return true;
+    }
+
+    window
+      .fetch(request.url, {
+        redirect: "follow",
+        credentials: "include"
+      })
+      .then(response => response.text())
+      .then(content => {
+        sendResponse({
+          type: MESSAGE_TYPES.get_gist_content,
+          url: request.url,
+          response: true,
+          content
+        });
+      });
+
+    return true;
   }
 
   if (!request.response) {
@@ -119,32 +144,37 @@ const handleMessage = async request => {
   if (request.type === MESSAGE_TYPES.get_styles_diff) {
     console.log("[background] REceived styles!");
 
-    const tab = await getTab(request.tabId);
+    getTab(request.tabId)
+      .then(tab => {
+        if (!tab || !tab.url) {
+          alert("Something didnt work quite right. Please try again!");
+          return Promise.reject();
+        }
 
-    if (!tab || !tab.url) {
-      alert("Something didnt work quite right. Please try again!");
-      return;
-    }
-
-    const stylesheetResponse = await uploadStylesheets({
-      stylesheets: request.value.stylesheets,
-      url: tab.url
-    });
-
-    if (stylesheetResponse.success) {
-      chrome.tabs.captureVisibleTab(null, { format: "png" }, async function(
-        photo
-      ) {
-        chrome.tabs.create({ url: stylesheetResponse.data.url });
-        await uploadScreenshot({
-          photo: await toFile(photo),
-          key: stylesheetResponse.data.id,
-          domain: stylesheetResponse.data.domain
+        return uploadStylesheets({
+          stylesheets: request.value.stylesheets,
+          url: tab.url
         });
+      })
+      .then(stylesheetResponse => {
+        if (stylesheetResponse.success) {
+          chrome.tabs.captureVisibleTab(null, { format: "png" }, async function(
+            photo
+          ) {
+            chrome.tabs.create({ url: stylesheetResponse.data.url });
+            // Capturing the photo fails sometimes shrug
+            if (photo) {
+              uploadScreenshot({
+                photo: await toFile(photo),
+                key: stylesheetResponse.data.id,
+                domain: stylesheetResponse.data.domain
+              });
+            }
+          });
+        } else {
+          alert("Something didnt work quite right. Please try again!");
+        }
       });
-    } else {
-      alert("Something didnt work quite right. Please try again!");
-    }
   }
 };
 

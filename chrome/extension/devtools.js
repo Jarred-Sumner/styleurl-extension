@@ -5,7 +5,7 @@ import Bluebird from "bluebird";
 let port;
 
 const log = (...messages) => {
-  alert(JSON.stringify(messages));
+  // alert(JSON.stringify(messages));
 };
 
 const isResourceStylesheet = resource => {

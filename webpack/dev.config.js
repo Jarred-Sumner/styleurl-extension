@@ -1,5 +1,7 @@
 const path = require("path");
 const webpack = require("webpack");
+const WriteAssetsWebpackPlugin = require("write-assets-webpack-plugin");
+
 const autoprefixer = require("autoprefixer");
 
 const host = "localhost";
@@ -20,6 +22,10 @@ const baseDevConfig = () => ({
       customPath,
       hotScript,
       path.join(__dirname, "../chrome/extension/devtools")
+    ],
+    github_gist_content_script: [
+      customPath,
+      path.join(__dirname, "../chrome/extension/github_gist_content_script")
     ]
   },
   devMiddleware: {
@@ -49,7 +55,8 @@ const baseDevConfig = () => ({
       "process.env": {
         NODE_ENV: JSON.stringify("development")
       }
-    })
+    }),
+    new WriteAssetsWebpackPlugin({ force: true, extension: ["js"] })
   ],
   resolve: {
     extensions: ["*", ".js"]

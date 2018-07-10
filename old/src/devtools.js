@@ -1,50 +1,9 @@
 import DiffMatchPatch from "diff-match-patch";
 import { portName } from "../../chrome/extension/lib/port";
 
-const getLastStylesheetURL = () => {
-  return new Promise((resolve, reject) => {
-    chrome.devtools.inspectedWindow.eval(
-      '(function() {\n\
-          var links = document.head.querySelectorAll("link[rel=stylesheet][href]");\n\
-          var last = links[links.length - 1];\n\
-          return last && last.href})()',
-      function(href, fail) {
-        if (fail || !href) {
-          resolve(null);
-        }
-        resolve(href);
-      }
-    );
-  });
-};
-
-/**
- * @param {Object} event
- * @return {boolean}
- */
-function isNewlyAdded(event) {
-  return event.url.indexOf("inspector://") == 0 || event.type === "document";
-}
-
 const diffMatchPatch = new DiffMatchPatch();
 diffMatchPatch.Patch_Margin = 16;
 
-class ResourceMap {
-  constructor() {
-    this._map = {};
-  }
-
-  get(key) {
-    ResourceMap._validateKey(key);
-    return this._map[key];
-  }
-
-  static _validateKey(key) {
-    if (!key) {
-      throw new Error("key is " + JSON.stringify(key));
-    }
-  }
-}
 function ResourceMap() {
   this._map = {};
 }
@@ -70,32 +29,84 @@ ResourceMap.prototype = {
 };
 
 var resourceMap;
+var lastStylesheetURL = "";
 var addedCSS = "";
+
+/**
+ * @param {Object} event
+ * @return {boolean}
+ */
+function isNewlyAdded(event) {
+  return event.url.indexOf("inspector://") == 0 || event.type === "document";
+}
 
 chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(function(
   event,
   content
 ) {
   if (isNewlyAdded(event)) {
-    console.info("New CSS rules added. Appending them to", lastStylesheetURL);
-    var oldAddedCSS = addedCSS;
-    if (content) {
-      addedCSS = "\n" + content + "\n";
+    if (lastStylesheetURL) {
+      getBackend(lastStylesheetURL);
     } else {
-      addedCSS = "";
+      getLastStylesheetURL(getBackend);
     }
-    patch = diffMatchPatch.patch_make(
-      resourceMap.get(lastStylesheetURL) + oldAddedCSS,
-      resourceMap.get(lastStylesheetURL) + addedCSS
-    );
   } else {
-    patch = diffMatchPatch.patch_make(resourceMap.get(url), content);
-    resourceMap.set(url, content);
+    getBackend(event.url);
   }
 
-  if (arePatchesEmpty(patch)) {
-    console.error("Patch for " + JSON.stringify(url) + " is empty.");
-    return;
+  function getBackend(url) {
+    chrome.extension.sendRequest({ method: "getBackend", url: url }, function(
+      response
+    ) {
+      if (!response) {
+        console.error(
+          url + " doesn't match any rules in the DevTools Autosave options."
+        );
+        return;
+      }
+
+      sendToBackgroundPage();
+
+      function sendToBackgroundPage() {
+        var patch;
+        if (isNewlyAdded(event)) {
+          console.info(
+            "New CSS rules added. Appending them to",
+            lastStylesheetURL
+          );
+          var oldAddedCSS = addedCSS;
+          if (content) {
+            addedCSS = "\n" + content + "\n";
+          } else {
+            addedCSS = "";
+          }
+          patch = diffMatchPatch.patch_make(
+            resourceMap.get(lastStylesheetURL) + oldAddedCSS,
+            resourceMap.get(lastStylesheetURL) + addedCSS
+          );
+        } else {
+          patch = diffMatchPatch.patch_make(resourceMap.get(url), content);
+          resourceMap.set(url, content);
+        }
+
+        if (arePatchesEmpty(patch)) {
+          console.error("Patch for " + JSON.stringify(url) + " is empty.");
+          return;
+        }
+
+        chrome.extension.sendRequest({
+          method: "send",
+          content: JSON.stringify(patch),
+          url: response.serverURL,
+          headers: {
+            "Content-Type": "application/json",
+            "X-URL": url,
+            "X-Path": response.savePath,
+            "X-Type": event.type
+          }
+        });
+      }
+    });
   }
 });
 
@@ -116,6 +127,22 @@ function arePatchesEmpty(patches) {
 /**
  * @param {Function} onSuccess
  */
+function getLastStylesheetURL(onSuccess) {
+  lastStylesheetURL = "";
+  chrome.devtools.inspectedWindow.eval(
+    '(function() {\n\
+      var links = document.head.querySelectorAll("link[rel=stylesheet][href]");\n\
+      var last = links[links.length - 1];\n\
+      return last && last.href})()',
+    function(href, fail) {
+      if (fail || !href) {
+        throw new Error("Cannot find link[rel=stylesheet][href] in the head.");
+      }
+      lastStylesheetURL = href;
+      onSuccess(href);
+    }
+  );
+}
 
 /**
  * @param {Resource} resource

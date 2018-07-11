@@ -1,9 +1,48 @@
-import { portName, MESSAGE_TYPES } from "./lib/port";
 import _ from "lodash";
 import S3Upload from "react-s3-uploader/s3upload";
+import {
+  applyStyleURLToTabID,
+  getGistById,
+  getGistIDFromURL,
+  loadStylefileFromGist,
+  SPECIAL_QUERY_PARAMS
+} from "./lib/gists";
+import { MESSAGE_TYPES, portName } from "./lib/port";
+import { shouldApplyStyleToURL } from "./lib/stylefile";
 const bluebird = require("bluebird");
 
+const log = (...messages) =>
+  console.log.apply(console, ["[Background]", ...messages]);
+
 const SCREENSHOT_CONTENT_TYPE = "image/png";
+
+const TAB_IDS_TO_APPLY_STYLES = {};
+
+const startMonitoringTabID = (tabId, gistId) => {
+  if (!TAB_IDS_TO_APPLY_STYLES[tabId]) {
+    TAB_IDS_TO_APPLY_STYLES[tabId] = [];
+  }
+
+  if (!TAB_IDS_TO_APPLY_STYLES[tabId].includes(gistId)) {
+    TAB_IDS_TO_APPLY_STYLES[tabId].push(gistId);
+  }
+};
+
+const stopMonitoringTabID = (tabId, gistId) => {
+  if (
+    TAB_IDS_TO_APPLY_STYLES[tabId] &&
+    TAB_IDS_TO_APPLY_STYLES[tabId].includes(gistId)
+  ) {
+    TAB_IDS_TO_APPLY_STYLES[tabId].splice(
+      TAB_IDS_TO_APPLY_STYLES[tabId].indexOf(gistId),
+      1
+    );
+
+    if (TAB_IDS_TO_APPLY_STYLES[tabId].length === 0) {
+      delete TAB_IDS_TO_APPLY_STYLES[tabId];
+    }
+  }
+};
 
 global.Promise = bluebird;
 
@@ -200,3 +239,56 @@ const createStyleURL = tab => {
 
 chrome.browserAction.onClicked.addListener(createStyleURL);
 chrome.runtime.onMessage.addListener(handleMessage);
+
+chrome.webNavigation.onBeforeNavigate.addListener(
+  async ({ tabId, url }) => {
+    const gistID = getGistIDFromURL(url);
+
+    if (!gistID) {
+      log("Gist ID not found");
+      return;
+    }
+
+    startMonitoringTabID(tabId, gistID);
+  },
+  {
+    url: Object.values(SPECIAL_QUERY_PARAMS).map(queryContains => ({
+      queryContains
+    }))
+  }
+);
+
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  if (!TAB_IDS_TO_APPLY_STYLES[tabId]) {
+    return;
+  }
+
+  if (!tab.url) {
+    return;
+  }
+
+  if (changeInfo.status !== "loading") {
+    return;
+  }
+
+  TAB_IDS_TO_APPLY_STYLES[tabId].forEach(async gistId => {
+    const gist = await getGistById(gistId);
+    const stylefile = loadStylefileFromGist(gist);
+
+    if (!stylefile) {
+      return;
+    }
+
+    if (!shouldApplyStyleToURL(stylefile, tab.url)) {
+      return;
+    }
+
+    applyStyleURLToTabID(gist, tabId);
+  });
+});
+
+chrome.tabs.onRemoved.addListener(tabId => {
+  if (TAB_IDS_TO_APPLY_STYLES[tabId]) {
+    stopMonitoringTabID(tabId);
+  }
+});

@@ -1,12 +1,37 @@
-import YAML from "js-yaml";
 import { MESSAGE_TYPES } from "./lib/port";
-const STYLEFILE_NAMES = ["Stylefile.yml", "Stylefile"];
+import { SPECIAL_QUERY_PARAMS, STYLEFILE_NAMES } from "./lib/gists";
+import { loadStylefileFromString } from "./lib/stylefile";
+
+const getGistID = () => window.location.pathname.split("/")[2];
+
+const buildStyleURL = styleFile => {
+  const originalURL = styleFile.redirect_url;
+
+  const queryString = originalURL.includes("?")
+    ? originalURL.split("?")[1]
+    : "";
+  const searchParams = new URLSearchParams(queryString);
+
+  searchParams.append(SPECIAL_QUERY_PARAMS.gist_id, getGistID());
+
+  return `${originalURL}?${searchParams.toString()}`;
+};
 
 const log = (...messages) =>
   console.log.apply(console, ["[StyleURL]", ...messages]);
 
 const renderStyleURLBar = styleFile => {
-  log("Detected Stylefile.yml", styleFile);
+  log("Detected Stylefile", styleFile);
+
+  const div = document.createElement("div");
+  div.innerHTML = `<div style="background-color: #0366d6; padding-top: 14px; padding-bottom: 14px;"><div class="container-lg px-3 clearfix"><div id="styleurl_bar_root" style="display: flex; justify-content: space-between; align-items: center; color white;">
+  <div style="font-size: 18px; white-space: nowrap; color: white;">Apply this StyleURL on <strong>${
+    styleFile.domains[0]
+  }</strong>?</div>
+
+  <a href="${buildStyleURL(styleFile)}" class="btn">Apply StyleURL</a>
+</div></div></div>`;
+  document.body.prepend(div);
 };
 
 // Hard to know 100% of the time whether or not we're on the gist page
@@ -95,7 +120,7 @@ if (isGistPage(location.pathname)) {
 
     getGistFileContents(filename)
       .then(yaml => {
-        return YAML.safeLoad(yaml);
+        return loadStylefileFromString(yaml);
       })
       .then(styleFile => {
         if (!styleFile) {

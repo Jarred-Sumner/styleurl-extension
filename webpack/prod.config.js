@@ -24,17 +24,14 @@ module.exports = {
     filename: "[name].bundle.js",
     chunkFilename: "[id].chunk.js"
   },
+  optimization: {
+    minimize: false
+  },
   plugins: [
     new webpack.optimize.OccurrenceOrderPlugin(),
     new webpack.IgnorePlugin(/[^/]+\/[\S]+.dev$/),
-    new webpack.optimize.UglifyJsPlugin({
-      comments: false,
-      compressor: {
-        warnings: false
-      }
-    }),
     new webpack.DefinePlugin({
-      __API_HOST__: "https://api.styleurl.app",
+      __API_HOST__: "`https://api.styleurl.app`",
       "process.env": {
         NODE_ENV: JSON.stringify("production")
       }
@@ -51,6 +48,7 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
+            plugins: ["lodash"],
             presets: [
               [
                 "@babel/preset-env",

@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { loadStylefileFromString } from "./stylefile";
 
 export const STYLEFILE_NAMES = ["Stylefile.yml", "Stylefile"];

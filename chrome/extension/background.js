@@ -9,7 +9,7 @@ import {
 } from "./lib/gists";
 import { MESSAGE_TYPES, portName } from "./lib/port";
 import { shouldApplyStyleToURL } from "./lib/stylefile";
-const bluebird = require("bluebird");
+import Bluebird from "bluebird";
 
 const log = (...messages) =>
   console.log.apply(console, ["[Background]", ...messages]);
@@ -44,7 +44,7 @@ const stopMonitoringTabID = (tabId, gistId) => {
   }
 };
 
-global.Promise = bluebird;
+global.Promise = Bluebird;
 
 const buildURL = path => {
   return __API_HOST__ + path;
@@ -271,20 +271,38 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     return;
   }
 
-  TAB_IDS_TO_APPLY_STYLES[tabId].forEach(async gistId => {
-    const gist = await getGistById(gistId);
-    const stylefile = loadStylefileFromGist(gist);
+  Promise.all(
+    TAB_IDS_TO_APPLY_STYLES[tabId].map(async gistId => {
+      const gist = await getGistById(gistId);
+      const stylefile = loadStylefileFromGist(gist);
 
-    if (!stylefile) {
-      return;
-    }
+      if (!stylefile) {
+        return false;
+      }
 
-    if (!shouldApplyStyleToURL(stylefile, tab.url)) {
-      return;
-    }
+      if (!shouldApplyStyleToURL(stylefile, tab.url)) {
+        return false;
+      }
 
-    applyStyleURLToTabID(gist, tabId);
-  });
+      applyStyleURLToTabID(gist, tabId);
+      return true;
+    })
+  )
+    .then(appliedStyles => appliedStyles.filter(_.identity))
+    .then(appliedStyles => {
+      const stylesCount = appliedStyles.length;
+      if (stylesCount > 0) {
+        chrome.browserAction.setBadgeText({
+          text: `${stylesCount}`,
+          tabId: tabId
+        });
+      } else {
+        chrome.browserAction.setBadgeText({
+          text: "",
+          tabId: tabId
+        });
+      }
+    });
 });
 
 chrome.tabs.onRemoved.addListener(tabId => {

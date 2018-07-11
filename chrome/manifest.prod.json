@@ -1,23 +1,27 @@
 {
   "version": "0.0.0",
-  "name": "react-chrome-extension-example",
+  "name": "StyleURL",
   "manifest_version": 2,
-  "description": "Example for react-chrome-extension-boilerplate",
-  "browser_action": {
-    "default_title": "React Chrome Extension Example",
-    "default_popup": "popup.html"
-  },
+  "description":
+    "Publish CSS changes you made in Chrome Inspector to other people",
+  "browser_action": {},
+  "devtools_page": "devtools.html",
   "icons": {
     "16": "img/icon-16.png",
     "48": "img/icon-48.png",
     "128": "img/icon-128.png"
   },
-  "web_accessible_resources": [
-    "inject.html"
-  ],
   "background": {
     "page": "background.html"
   },
-  "permissions": [ "contextMenus", "tabs", "storage", "https://github.com/*" ],
-  "content_security_policy": "default-src 'self'; script-src 'self'; style-src * 'unsafe-inline'; img-src 'self' data:;"
+  "content_scripts": [
+    {
+      "matches": ["https://gist.github.com/*/*"],
+      "js": ["js/github_gist_content_script.bundle.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "permissions": ["tabs", "webNavigation", "<all_urls>", "storage"],
+  "content_security_policy":
+    "default-src 'self'; script-src 'self' 'unsafe-eval'; connect-src https://gist.github.com https://gist.githubusercontent.com https://s3-us-west-2.amazonaws.com https://api.github.com data: https://styleurlapp.s3-us-west-2.amazonaws.com https://styleurlapp.s3.us-west-2.amazonaws.com https://api.styleurl.app https://www.styleurl.app https://styleurl.app; style-src * 'unsafe-inline' 'self' blob:; img-src 'self' data:;"
 }

@@ -1,6 +1,6 @@
 {
   "version": "0.0.0",
-  "name": "StyleURL",
+  "name": "StyleURL (Development)",
   "manifest_version": 2,
   "description":
     "Publish CSS changes you made in Chrome Inspector to other people",
@@ -11,7 +11,6 @@
     "48": "img/icon-48.png",
     "128": "img/icon-128.png"
   },
-  "web_accessible_resources": ["inject.html"],
   "background": {
     "page": "background.html"
   },

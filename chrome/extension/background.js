@@ -47,7 +47,7 @@ const stopMonitoringTabID = (tabId, gistId) => {
 global.Promise = bluebird;
 
 const buildURL = path => {
-  return "__API_HOST__" + path;
+  return __API_HOST__ + path;
 };
 
 const toBlob = base64String => {
@@ -132,7 +132,7 @@ const uploadScreenshot = ({ key, domain, photo }) => {
       console.error(error);
       delete uploaders[key];
     },
-    server: "__API_HOST__",
+    server: __API_HOST__,
     uploadRequestHeaders: {}
   });
 };

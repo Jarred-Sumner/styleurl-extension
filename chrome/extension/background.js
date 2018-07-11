@@ -7,7 +7,7 @@ import {
   loadStylefileFromGist,
   SPECIAL_QUERY_PARAMS
 } from "./lib/gists";
-import { MESSAGE_TYPES, portName } from "./lib/port";
+import { MESSAGE_TYPES, portName, tabIdFromPortName } from "./lib/port";
 import { shouldApplyStyleToURL } from "./lib/stylefile";
 import Bluebird from "bluebird";
 
@@ -174,6 +174,21 @@ const handleMessage = (request, sender, sendResponse) => {
       });
 
     return true;
+  } else if (request.type === MESSAGE_TYPES.style_diff_changed) {
+    chrome.browserAction.getBadgeText({ tabId: request.tabId }, function(
+      currentText
+    ) {
+      if (request.value.stylesheets.length > 0) {
+        chrome.browserAction.setBadgeText({
+          text: "+",
+          tabId: request.tabId
+        });
+      } else if (currentText === "+" && request.value.count === 0) {
+        chrome.browserAction.setBadgeText({ text: "", tabId: request.tabId });
+      }
+    });
+
+    return;
   }
 
   if (!request.response) {
@@ -224,6 +239,14 @@ chrome.runtime.onConnect.addListener(function(port) {
 
   console.log("NEW PORT", port.name);
   port.onMessage.addListener(handleMessage);
+  port.onDisconnect.addListener(() => {
+    const tabId = tabIdFromPortName(port.name);
+    chrome.browserAction.getBadgeText({ tabId }, text => {
+      if (text === "+") {
+        chrome.browserAction.setBadgeText({ tabId, text: "" });
+      }
+    });
+  });
 });
 
 const createStyleURL = tab => {

@@ -72,8 +72,26 @@ const handleReceivedMessage = (request, sender, sendResponse) => {
   return true;
 };
 
+const sendStyleDiffChangedEvent = () => {
+  getStyles().then(stylesheets => {
+    if (!port) {
+      return;
+    }
+
+    port.postMessage({
+      type: MESSAGE_TYPES.style_diff_changed,
+      tabId: chrome.devtools.inspectedWindow.tabId,
+      response: false,
+      value: {
+        stylesheets
+      }
+    });
+  });
+};
+
 const setupPort = () => {
   port = createPort();
+  sendStyleDiffChangedEvent();
   port.onMessage.addListener(handleReceivedMessage);
 };
 
@@ -88,5 +106,10 @@ chrome.devtools.network.onNavigated.addListener(function() {
 });
 
 chrome.runtime.onMessage.addListener(handleReceivedMessage);
-
+chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(
+  sendStyleDiffChangedEvent
+);
+chrome.devtools.inspectedWindow.onResourceAdded.addListener(
+  sendStyleDiffChangedEvent
+);
 setupPort();

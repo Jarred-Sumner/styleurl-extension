@@ -52,6 +52,7 @@ const baseDevConfig = () => ({
     new webpack.DefinePlugin({
       __HOST__: `'${host}'`,
       __PORT__: port,
+      __API_HOST__: "http://localhost:3001",
       "process.env": {
         NODE_ENV: JSON.stringify("development")
       }

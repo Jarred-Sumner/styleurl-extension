@@ -10,6 +10,7 @@ import {
 import { MESSAGE_TYPES, portName, tabIdFromPortName } from "./lib/port";
 import { shouldApplyStyleToURL } from "./lib/stylefile";
 import Bluebird from "bluebird";
+import diffSheet from "stylesheet-differ";
 
 const log = (...messages) =>
   console.log.apply(console, ["[Background]", ...messages]);
@@ -17,6 +18,7 @@ const log = (...messages) =>
 const SCREENSHOT_CONTENT_TYPE = "image/png";
 
 const TAB_IDS_TO_APPLY_STYLES = {};
+const TAB_ORIGINAL_STYLES = {};
 
 const startMonitoringTabID = (tabId, gistId) => {
   if (!TAB_IDS_TO_APPLY_STYLES[tabId]) {
@@ -143,12 +145,28 @@ const getTab = tabId =>
   });
 
 const handleMessage = (request, sender, sendResponse) => {
+  console.log("MESSAGE", request);
   if (!request.type) {
     console.error(
       "[background] request type must be one of",
       _.values(MESSAGE_TYPES)
     );
     return;
+  }
+
+  if (request.type === MESSAGE_TYPES.send_content_stylesheets) {
+    console.log("[background] received content stylesheets");
+    if (!TAB_ORIGINAL_STYLES[request.tabId]) {
+      TAB_ORIGINAL_STYLES[request.tabId] = request.value;
+    } else {
+      const contentStyles = request.value;
+      const existingSheets = Object.keys(TAB_ORIGINAL_STYLES[request.tabId]);
+      Object.keys(contentStyles).forEach(sUrl => {
+        if (existingSheets.indexOf(sUrl) === -1) {
+          TAB_ORIGINAL_STYLES[request.tabId][sUrl] = contentStyles[sUrl];
+        }
+      });
+    }
   }
 
   if (request.type === MESSAGE_TYPES.get_gist_content) {
@@ -205,8 +223,26 @@ const handleMessage = (request, sender, sendResponse) => {
           return Promise.reject();
         }
 
+        let modifiedSheets = request.value.stylesheets;
+
+        const currentStyles = request.value.general_stylesheets;
+        const oldStyles = TAB_ORIGINAL_STYLES[request.tabId];
+        if (oldStyles) {
+          Object.keys(oldStyles).forEach(oldUrl => {
+            const newStyle = currentStyles[oldUrl];
+            const oldStyle = oldStyles[oldUrl];
+            console.log(oldUrl, oldStyle, newStyle);
+            const diffedStyle = diffSheet(oldStyle, newStyle);
+            if (diffedStyle && diffedStyle.trim().length > 0) {
+              modifiedSheets.push({ url: oldUrl, content: diffedStyle });
+            }
+          });
+        }
+
+        console.log(modifiedSheets);
+
         return uploadStylesheets({
-          stylesheets: request.value.stylesheets,
+          stylesheets: modifiedSheets,
           url: tab.url
         });
       })
@@ -261,6 +297,7 @@ const createStyleURL = tab => {
 };
 
 chrome.browserAction.onClicked.addListener(createStyleURL);
+
 chrome.runtime.onMessage.addListener(handleMessage);
 
 chrome.webNavigation.onBeforeNavigate.addListener(

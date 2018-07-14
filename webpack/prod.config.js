@@ -5,6 +5,9 @@ const autoprefixer = require("autoprefixer");
 const customPath = path.join(__dirname, "./customPublicPath");
 
 module.exports = {
+  node: {
+    fs: "empty"
+  },
   entry: {
     background: [
       customPath,

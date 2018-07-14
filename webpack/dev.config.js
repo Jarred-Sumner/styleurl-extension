@@ -12,6 +12,9 @@ const hotScript =
 
 const baseDevConfig = () => ({
   devtool: "eval-cheap-module-source-map",
+  node: {
+    fs: "empty"
+  },
   entry: {
     background: [
       customPath,

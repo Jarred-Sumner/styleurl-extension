@@ -78,7 +78,7 @@
     "react-s3-uploader": "^4.8.0",
     "redux": "^3.2.1",
     "redux-thunk": "^2.0.1",
-    "stylesheet-differ": "^0.0.3",
+    "stylesheet-differ": "https://github.com/lukemiles/stylesheet-differ",
     "url-parse": "^1.4.1",
     "url-pattern": "^1.0.3"
   }

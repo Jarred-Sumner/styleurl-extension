@@ -6088,9 +6088,9 @@ style-loader@^0.13.1:
   dependencies:
     loader-utils "^1.0.2"
 
-stylesheet-differ@^0.0.3:
+"stylesheet-differ@https://github.com/lukemiles/stylesheet-differ":
   version "0.0.3"
-  resolved "https://registry.yarnpkg.com/stylesheet-differ/-/stylesheet-differ-0.0.3.tgz#737f346995c8834d3d039d186f32d5db2ee5c51c"
+  resolved "https://github.com/lukemiles/stylesheet-differ#78914836b97bed24c9a0444677e9fb11a589deba"
   dependencies:
     cssobj "^1.3.6"
     cssobj-core "^1.1.9"

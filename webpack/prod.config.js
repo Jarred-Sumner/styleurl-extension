@@ -6,7 +6,9 @@ const customPath = path.join(__dirname, "./customPublicPath");
 
 module.exports = {
   node: {
-    fs: "empty"
+    fs: "mock",
+    dns: "empty",
+    net: "empty"
   },
   entry: {
     background: [
@@ -41,7 +43,10 @@ module.exports = {
     })
   ],
   resolve: {
-    extensions: ["*", ".js"]
+    extensions: ["*", ".js"],
+    alias: {
+      fs: "memfs"
+    }
   },
   module: {
     rules: [

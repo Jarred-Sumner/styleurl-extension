@@ -3,7 +3,9 @@ const config = require("./prod.config");
 
 module.exports = {
   node: {
-    fs: "empty"
+    fs: "mock",
+    dns: "empty",
+    net: "empty"
   },
   output: {
     libraryTarget: "commonjs2"

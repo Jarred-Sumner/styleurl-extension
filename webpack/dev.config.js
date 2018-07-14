@@ -13,8 +13,10 @@ const hotScript =
 const baseDevConfig = () => ({
   devtool: "eval-cheap-module-source-map",
   node: {
-    fs: "empty"
+    dns: "empty",
+    net: "empty"
   },
+
   entry: {
     background: [
       customPath,
@@ -63,7 +65,10 @@ const baseDevConfig = () => ({
     new WriteAssetsWebpackPlugin({ force: true, extension: ["js"] })
   ],
   resolve: {
-    extensions: ["*", ".js"]
+    extensions: ["*", ".js"],
+    alias: {
+      fs: "memfs"
+    }
   },
   module: {
     rules: [

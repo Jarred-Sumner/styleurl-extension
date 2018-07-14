@@ -164,6 +164,10 @@ chrome.runtime.onMessage.addListener(handleReceivedMessage);
 chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(
   sendStyleDiffChangedEvent
 );
+
+chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(() =>
+  alert(JSON.stringify(e))
+);
 chrome.devtools.inspectedWindow.onResourceAdded.addListener(
   sendStyleDiffChangedEvent
 );

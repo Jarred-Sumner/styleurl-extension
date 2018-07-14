@@ -6,7 +6,6 @@ const customPath = path.join(__dirname, "./customPublicPath");
 
 module.exports = {
   node: {
-    fs: "mock",
     dns: "empty",
     net: "empty"
   },

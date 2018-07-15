@@ -10,6 +10,7 @@ module.exports = {
     net: "empty"
   },
   entry: {
+    popup: [customPath, path.join(__dirname, "../chrome/extension/popup")],
     background: [
       customPath,
       path.join(__dirname, "../chrome/extension/background")
@@ -55,8 +56,8 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
-            plugins: ["lodash"],
             presets: [
+              "@babel/preset-react",
               [
                 "@babel/preset-env",
                 {
@@ -74,12 +75,9 @@ module.exports = {
         test: /\.css$/,
         use: [
           "style-loader",
-          "css-loader?modules&sourceMap&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]",
+          { loader: "css-loader", options: { importLoaders: 1 } },
           {
-            loader: "postcss-loader",
-            options: {
-              plugins: () => [autoprefixer]
-            }
+            loader: "postcss-loader"
           }
         ]
       }

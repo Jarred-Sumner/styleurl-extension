@@ -1,30 +1,30 @@
 Arguments: 
-  /usr/local/Cellar/node@8/8.11.3_1/bin/node /usr/local/Cellar/yarn/1.6.0/libexec/bin/yarn.js add --dev memfs-webpack
+  /usr/local/Cellar/node/10.1.0/bin/node /usr/local/bin/yarn add -D @babel/react
 
 PATH: 
-  /usr/local/opt/node@8/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin
+  /Applications/Sketch.app/Contents/Resources/sketchtool/bin:/Users/jarred/.cargo/bin:/Users/jarred/.rbenv/shims:./node_modules/.bin:/Users/jarred/.yarn/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin
 
 Yarn version: 
-  1.6.0
+  1.7.0
 
 Node version: 
-  8.11.3
+  10.1.0
 
 Platform: 
   darwin x64
 
 Trace: 
-  Error: https://registry.yarnpkg.com/memfs-webpack: Not found
-      at Request.params.callback [as _callback] (/usr/local/Cellar/yarn/1.6.0/libexec/lib/cli.js:65327:18)
-      at Request.self.callback (/usr/local/Cellar/yarn/1.6.0/libexec/lib/cli.js:133155:22)
-      at emitTwo (events.js:126:13)
-      at Request.emit (events.js:214:7)
-      at Request.<anonymous> (/usr/local/Cellar/yarn/1.6.0/libexec/lib/cli.js:134138:10)
-      at emitOne (events.js:116:13)
-      at Request.emit (events.js:211:7)
-      at IncomingMessage.<anonymous> (/usr/local/Cellar/yarn/1.6.0/libexec/lib/cli.js:134058:12)
-      at Object.onceWrapper (events.js:313:30)
-      at emitNone (events.js:111:20)
+  Error: https://registry.yarnpkg.com/@babel%2freact: Not found
+      at Request.params.callback [as _callback] (/usr/local/lib/node_modules/yarn/lib/cli.js:65656:18)
+      at Request.self.callback (/usr/local/lib/node_modules/yarn/lib/cli.js:134675:22)
+      at Request.emit (events.js:182:13)
+      at Request.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:135658:10)
+      at Request.emit (events.js:182:13)
+      at IncomingMessage.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:135578:12)
+      at Object.onceWrapper (events.js:273:13)
+      at IncomingMessage.emit (events.js:187:15)
+      at endReadableNT (_stream_readable.js:1086:12)
+      at process._tickCallback (internal/process/next_tick.js:63:19)
 
 npm manifest: 
   {
@@ -59,6 +59,7 @@ npm manifest:
     "devDependencies": {
       "babel-loader": "^8.0.0-beta",
       "babel-plugin-lodash": "^3.3.4",
+      "babel-preset-react": "^6.24.1",
       "chai": "^3.2.0",
       "chromedriver": "^2.33.2",
       "cross-env": "^3.1.3",
@@ -71,6 +72,7 @@ npm manifest:
       "eslint-plugin-jsx-a11y": "^2.2.3",
       "eslint-plugin-react": "^6.5.0",
       "jsdom": "^9.2.1",
+      "memfs": "^2.9.4",
       "minimist": "^1.2.0",
       "mocha": "^3.1.2",
       "postcss-loader": "^1.2.1",
@@ -106,7 +108,7 @@ npm manifest:
       "react-s3-uploader": "^4.8.0",
       "redux": "^3.2.1",
       "redux-thunk": "^2.0.1",
-      "stylesheet-differ": "^0.0.3",
+      "stylesheet-differ": "https://github.com/lukemiles/stylesheet-differ",
       "url-parse": "^1.4.1",
       "url-pattern": "^1.0.3"
     }
@@ -1148,6 +1150,14 @@ Lockfile:
       esutils "^2.0.2"
       js-tokens "^3.0.0"
   
+  babel-helper-builder-react-jsx@^6.24.1:
+    version "6.26.0"
+    resolved "https://registry.yarnpkg.com/babel-helper-builder-react-jsx/-/babel-helper-builder-react-jsx-6.26.0.tgz#39ff8313b75c8b65dceff1f31d383e0ff2a408a0"
+    dependencies:
+      babel-runtime "^6.26.0"
+      babel-types "^6.26.0"
+      esutils "^2.0.2"
+  
   babel-loader@^8.0.0-beta:
     version "8.0.0-beta.4"
     resolved "https://registry.yarnpkg.com/babel-loader/-/babel-loader-8.0.0-beta.4.tgz#c3fab00696c385c70c04dbe486391f0eb996f345"
@@ -1166,6 +1176,82 @@ Lockfile:
       glob "^7.1.1"
       lodash "^4.17.10"
       require-package-name "^2.0.1"
+  
+  babel-plugin-syntax-flow@^6.18.0:
+    version "6.18.0"
+    resolved "https://registry.yarnpkg.com/babel-plugin-syntax-flow/-/babel-plugin-syntax-flow-6.18.0.tgz#4c3ab20a2af26aa20cd25995c398c4eb70310c8d"
+  
+  babel-plugin-syntax-jsx@^6.3.13, babel-plugin-syntax-jsx@^6.8.0:
+    version "6.18.0"
+    resolved "https://registry.yarnpkg.com/babel-plugin-syntax-jsx/-/babel-plugin-syntax-jsx-6.18.0.tgz#0af32a9a6e13ca7a3fd5069e62d7b0f58d0d8946"
+  
+  babel-plugin-transform-flow-strip-types@^6.22.0:
+    version "6.22.0"
+    resolved "https://registry.yarnpkg.com/babel-plugin-transform-flow-strip-types/-/babel-plugin-transform-flow-strip-types-6.22.0.tgz#84cb672935d43714fdc32bce84568d87441cf7cf"
+    dependencies:
+      babel-plugin-syntax-flow "^6.18.0"
+      babel-runtime "^6.22.0"
+  
+  babel-plugin-transform-react-display-name@^6.23.0:
+    version "6.25.0"
+    resolved "https://registry.yarnpkg.com/babel-plugin-transform-react-display-name/-/babel-plugin-transform-react-display-name-6.25.0.tgz#67e2bf1f1e9c93ab08db96792e05392bf2cc28d1"
+    dependencies:
+      babel-runtime "^6.22.0"
+  
+  babel-plugin-transform-react-jsx-self@^6.22.0:
+    version "6.22.0"
+    resolved "https://registry.yarnpkg.com/babel-plugin-transform-react-jsx-self/-/babel-plugin-transform-react-jsx-self-6.22.0.tgz#df6d80a9da2612a121e6ddd7558bcbecf06e636e"
+    dependencies:
+      babel-plugin-syntax-jsx "^6.8.0"
+      babel-runtime "^6.22.0"
+  
+  babel-plugin-transform-react-jsx-source@^6.22.0:
+    version "6.22.0"
+    resolved "https://registry.yarnpkg.com/babel-plugin-transform-react-jsx-source/-/babel-plugin-transform-react-jsx-source-6.22.0.tgz#66ac12153f5cd2d17b3c19268f4bf0197f44ecd6"
+    dependencies:
+      babel-plugin-syntax-jsx "^6.8.0"
+      babel-runtime "^6.22.0"
+  
+  babel-plugin-transform-react-jsx@^6.24.1:
+    version "6.24.1"
+    resolved "https://registry.yarnpkg.com/babel-plugin-transform-react-jsx/-/babel-plugin-transform-react-jsx-6.24.1.tgz#840a028e7df460dfc3a2d29f0c0d91f6376e66a3"
+    dependencies:
+      babel-helper-builder-react-jsx "^6.24.1"
+      babel-plugin-syntax-jsx "^6.8.0"
+      babel-runtime "^6.22.0"
+  
+  babel-preset-flow@^6.23.0:
+    version "6.23.0"
+    resolved "https://registry.yarnpkg.com/babel-preset-flow/-/babel-preset-flow-6.23.0.tgz#e71218887085ae9a24b5be4169affb599816c49d"
+    dependencies:
+      babel-plugin-transform-flow-strip-types "^6.22.0"
+  
+  babel-preset-react@^6.24.1:
+    version "6.24.1"
+    resolved "https://registry.yarnpkg.com/babel-preset-react/-/babel-preset-react-6.24.1.tgz#ba69dfaea45fc3ec639b6a4ecea6e17702c91380"
+    dependencies:
+      babel-plugin-syntax-jsx "^6.3.13"
+      babel-plugin-transform-react-display-name "^6.23.0"
+      babel-plugin-transform-react-jsx "^6.24.1"
+      babel-plugin-transform-react-jsx-self "^6.22.0"
+      babel-plugin-transform-react-jsx-source "^6.22.0"
+      babel-preset-flow "^6.23.0"
+  
+  babel-runtime@^6.22.0, babel-runtime@^6.26.0:
+    version "6.26.0"
+    resolved "https://registry.yarnpkg.com/babel-runtime/-/babel-runtime-6.26.0.tgz#965c7058668e82b55d7bfe04ff2337bc8b5647fe"
+    dependencies:
+      core-js "^2.4.0"
+      regenerator-runtime "^0.11.0"
+  
+  babel-types@^6.26.0:
+    version "6.26.0"
+    resolved "https://registry.yarnpkg.com/babel-types/-/babel-types-6.26.0.tgz#a3b073f94ab49eb6fa55cd65227a334380632497"
+    dependencies:
+      babel-runtime "^6.26.0"
+      esutils "^2.0.2"
+      lodash "^4.17.4"
+      to-fast-properties "^1.0.3"
   
   balanced-match@^0.4.1, balanced-match@^0.4.2:
     version "0.4.2"
@@ -1818,7 +1904,7 @@ Lockfile:
     version "1.2.7"
     resolved "https://registry.yarnpkg.com/core-js/-/core-js-1.2.7.tgz#652294c14651db28fa93bd2d5ff2983a4f08c636"
   
-  core-js@^2.5.7:
+  core-js@^2.4.0, core-js@^2.5.7:
     version "2.5.7"
     resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.5.7.tgz#f972608ff0cead68b841a16a932d0b183791814e"
   
@@ -2788,6 +2874,10 @@ Lockfile:
     version "2.0.1"
     resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-2.0.1.tgz#7b05218ddf9667bf7f370bf7fdb2cb15fdd0aa49"
   
+  fast-extend@0.0.2:
+    version "0.0.2"
+    resolved "https://registry.yarnpkg.com/fast-extend/-/fast-extend-0.0.2.tgz#f5ec42cf40b9460f521a6387dfb52deeed671dbd"
+  
   fast-json-stable-stringify@^2.0.0:
     version "2.0.0"
     resolved "https://registry.yarnpkg.com/fast-json-stable-stringify/-/fast-json-stable-stringify-2.0.0.tgz#d5142c0caee6b1189f87d3a76111064f86c8bbf2"
@@ -2967,6 +3057,10 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/fs-minipass/-/fs-minipass-1.2.5.tgz#06c277218454ec288df77ada54a03b8702aacb9d"
     dependencies:
       minipass "^2.2.1"
+  
+  fs-monkey@^0.3.3:
+    version "0.3.3"
+    resolved "https://registry.yarnpkg.com/fs-monkey/-/fs-monkey-0.3.3.tgz#7960bb2b1fa2653731b9d0e2e84812a7e8b3664a"
   
   fs-write-stream-atomic@^1.0.8:
     version "1.0.10"
@@ -4052,7 +4146,7 @@ Lockfile:
     version "4.17.4"
     resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
   
-  lodash@^4.17.10, lodash@^4.17.5:
+  lodash@^4.17.10, lodash@^4.17.4, lodash@^4.17.5:
     version "4.17.10"
     resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
   
@@ -4153,6 +4247,13 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/mem/-/mem-1.1.0.tgz#5edd52b485ca1d900fe64895505399a0dfa45f76"
     dependencies:
       mimic-fn "^1.0.0"
+  
+  memfs@^2.9.4:
+    version "2.9.4"
+    resolved "https://registry.yarnpkg.com/memfs/-/memfs-2.9.4.tgz#2ca9d8088d61ab27376174f0ae68ea7084ac7214"
+    dependencies:
+      fast-extend "0.0.2"
+      fs-monkey "^0.3.3"
   
   memory-fs@^0.4.0, memory-fs@~0.4.1:
     version "0.4.1"
@@ -5505,7 +5606,7 @@ Lockfile:
     version "1.4.0"
     resolved "https://registry.yarnpkg.com/regenerate/-/regenerate-1.4.0.tgz#4a856ec4b56e4077c557589cae85e7a4c8869a11"
   
-  regenerator-runtime@^0.11.1:
+  regenerator-runtime@^0.11.0, regenerator-runtime@^0.11.1:
     version "0.11.1"
     resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.11.1.tgz#be05ad7f9bf7d22e056f9726cee5017fbf19e2e9"
   
@@ -6191,9 +6292,9 @@ Lockfile:
     dependencies:
       loader-utils "^1.0.2"
   
-  stylesheet-differ@^0.0.3:
+  "stylesheet-differ@https://github.com/lukemiles/stylesheet-differ":
     version "0.0.3"
-    resolved "https://registry.yarnpkg.com/stylesheet-differ/-/stylesheet-differ-0.0.3.tgz#737f346995c8834d3d039d186f32d5db2ee5c51c"
+    resolved "https://github.com/lukemiles/stylesheet-differ#78914836b97bed24c9a0444677e9fb11a589deba"
     dependencies:
       cssobj "^1.3.6"
       cssobj-core "^1.1.9"
@@ -6325,6 +6426,10 @@ Lockfile:
   to-arraybuffer@^1.0.0:
     version "1.0.1"
     resolved "https://registry.yarnpkg.com/to-arraybuffer/-/to-arraybuffer-1.0.1.tgz#7d229b1fcc637e466ca081180836a7aabff83f43"
+  
+  to-fast-properties@^1.0.3:
+    version "1.0.3"
+    resolved "https://registry.yarnpkg.com/to-fast-properties/-/to-fast-properties-1.0.3.tgz#b83571fa4d8c25b82e231b06e3a3055de4ca1a47"
   
   to-fast-properties@^2.0.0:
     version "2.0.0"

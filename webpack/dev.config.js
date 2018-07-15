@@ -10,7 +10,7 @@ const customPath = path.join(__dirname, "./customPublicPath");
 const hotScript =
   "webpack-hot-middleware/client?path=__webpack_hmr&dynamicPublicPath=true";
 
-const baseDevConfig = () => ({
+module.exports = {
   devtool: "eval-cheap-module-source-map",
   node: {
     dns: "empty",
@@ -18,6 +18,11 @@ const baseDevConfig = () => ({
   },
 
   entry: {
+    popup: [
+      customPath,
+      hotScript,
+      path.join(__dirname, "../chrome/extension/popup")
+    ],
     background: [
       customPath,
       hotScript,
@@ -79,6 +84,7 @@ const baseDevConfig = () => ({
           loader: "babel-loader",
           options: {
             presets: [
+              "@babel/preset-react",
               [
                 "@babel/preset-env",
                 {
@@ -96,31 +102,12 @@ const baseDevConfig = () => ({
         test: /\.css$/,
         use: [
           "style-loader",
-          "css-loader?modules&sourceMap&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]",
+          { loader: "css-loader", options: { importLoaders: 1 } },
           {
-            loader: "postcss-loader",
-            options: {
-              plugins: () => [autoprefixer]
-            }
+            loader: "postcss-loader"
           }
         ]
       }
     ]
   }
-});
-
-const injectPageConfig = baseDevConfig();
-injectPageConfig.entry = [
-  customPath,
-  path.join(__dirname, "../chrome/extension/inject")
-];
-delete injectPageConfig.hotMiddleware;
-delete injectPageConfig.module.rules[0].options;
-injectPageConfig.plugins.shift(); // remove HotModuleReplacementPlugin
-injectPageConfig.output = {
-  path: path.join(__dirname, "../dev/js"),
-  filename: "inject.bundle.js"
 };
-const appConfig = baseDevConfig();
-
-module.exports = [injectPageConfig, appConfig];

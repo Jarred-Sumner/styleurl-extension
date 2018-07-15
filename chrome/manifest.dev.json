@@ -4,9 +4,7 @@
   "manifest_version": 2,
   "description":
     "Publish CSS changes you made in Chrome Inspector to other people",
-  "browser_action": {
-    "default_popup": "popup.html"
-  },
+  "browser_action": {},
   "devtools_page": "devtools.html",
   "icons": {
     "16": "img/default_16x16.png",

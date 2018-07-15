@@ -221,6 +221,7 @@ const handleMessage = (request, sender, sendResponse) => {
         tabId: request.tabId,
         title: "Export CSS changes to Gist with StyleURL"
       });
+      chrome.browserAction.setPopup({ tabId: request.tabId, popup: "" });
     } else {
       chrome.browserAction.setIcon(
         {
@@ -233,6 +234,7 @@ const handleMessage = (request, sender, sendResponse) => {
         tabId: request.tabId,
         title: "StyleURL"
       });
+      chrome.browserAction.setPopup({ tabId, popup: "popup.html" });
     }
 
     return;
@@ -313,6 +315,7 @@ chrome.runtime.onConnect.addListener(function(port) {
       },
       log
     );
+    chrome.browserAction.setPopup({ tabId, popup: "popup.html" });
     chrome.browserAction.setTitle({ tabId, title: "StyleURL" });
   });
 });
@@ -402,3 +405,5 @@ chrome.tabs.onRemoved.addListener(tabId => {
     stopMonitoringTabID(tabId);
   }
 });
+
+chrome.browserAction.setPopup({ popup: "popup.html" });

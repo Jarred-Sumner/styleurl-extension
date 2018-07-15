@@ -3,7 +3,7 @@ import { loadStylefileFromString } from "./stylefile";
 
 export const STYLEFILE_NAMES = ["Stylefile.yml", "Stylefile"];
 export const SPECIAL_QUERY_PARAMS = {
-  gist_id: "styleURLGistID"
+  gist_id: "__styleurl"
 };
 
 export const getGistById = id =>
@@ -25,7 +25,7 @@ export const getGistIDFromURL = url => {
 
   const params = new URLSearchParams(queryString);
 
-  return params.get(SPECIAL_QUERY_PARAMS.gist_id);
+  return _.last(params.get(SPECIAL_QUERY_PARAMS.gist_id).split("gist_"));
 };
 
 export const getStylesheetsFromGist = gist => {

@@ -12,7 +12,7 @@ const buildStyleURL = styleFile => {
     : "";
   const searchParams = new URLSearchParams(queryString);
 
-  searchParams.append(SPECIAL_QUERY_PARAMS.gist_id, getGistID());
+  searchParams.append(SPECIAL_QUERY_PARAMS.gist_id, `gist_${getGistID()}`);
 
   return `${originalURL}?${searchParams.toString()}`;
 };

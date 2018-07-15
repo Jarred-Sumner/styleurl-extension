@@ -7,9 +7,9 @@
   "browser_action": {},
   "devtools_page": "devtools.html",
   "icons": {
-    "16": "img/icon-16.png",
-    "48": "img/icon-48.png",
-    "128": "img/icon-128.png"
+    "16": "img/default_16x16.png",
+    "48": "img/default_48x48.png",
+    "128": "img/default_128x128.png"
   },
   "background": {
     "page": "background.html"

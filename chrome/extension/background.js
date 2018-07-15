@@ -12,6 +12,22 @@ import { shouldApplyStyleToURL } from "./lib/stylefile";
 import Bluebird from "bluebird";
 import diffSheet from "stylesheet-differ";
 
+const PLUS_IMAGE_PATH = {
+  "16": "img/plus_16x16.png",
+  "19": "img/plus_19x19.png",
+  "38": "img/plus_38x38.png",
+  "48": "img/plus_48x48.png",
+  "128": "img/plus_128x128.png"
+};
+
+const DEFAULT_ICON_PATH = {
+  "16": "img/default_16x16.png",
+  "19": "img/default_19x19.png",
+  "38": "img/default_38x38.png",
+  "48": "img/default_48x48.png",
+  "128": "img/default_128x128.png"
+};
+
 const log = (...messages) =>
   console.log.apply(console, ["[Background]", ...messages]);
 
@@ -193,18 +209,31 @@ const handleMessage = (request, sender, sendResponse) => {
 
     return true;
   } else if (request.type === MESSAGE_TYPES.style_diff_changed) {
-    chrome.browserAction.getBadgeText({ tabId: request.tabId }, function(
-      currentText
-    ) {
-      if (request.value.stylesheets.length > 0) {
-        chrome.browserAction.setBadgeText({
-          text: "+",
-          tabId: request.tabId
-        });
-      } else if (currentText === "+" && request.value.count === 0) {
-        chrome.browserAction.setBadgeText({ text: "", tabId: request.tabId });
-      }
-    });
+    if (request.value.stylesheets.length > 0) {
+      chrome.browserAction.setIcon(
+        {
+          tabId: request.tabId,
+          path: PLUS_IMAGE_PATH
+        },
+        log
+      );
+      chrome.browserAction.setTitle({
+        tabId: request.tabId,
+        title: "Export CSS changes to Gist with StyleURL"
+      });
+    } else {
+      chrome.browserAction.setIcon(
+        {
+          tabId: request.tabId,
+          path: DEFAULT_ICON_PATH
+        },
+        log
+      );
+      chrome.browserAction.setTitle({
+        tabId: request.tabId,
+        title: "StyleURL"
+      });
+    }
 
     return;
   }
@@ -277,11 +306,14 @@ chrome.runtime.onConnect.addListener(function(port) {
   port.onMessage.addListener(handleMessage);
   port.onDisconnect.addListener(() => {
     const tabId = tabIdFromPortName(port.name);
-    chrome.browserAction.getBadgeText({ tabId }, text => {
-      if (text === "+") {
-        chrome.browserAction.setBadgeText({ tabId, text: "" });
-      }
-    });
+    chrome.browserAction.setIcon(
+      {
+        tabId: tabId,
+        path: DEFAULT_ICON_PATH
+      },
+      log
+    );
+    chrome.browserAction.setTitle({ tabId, title: "StyleURL" });
   });
 });
 

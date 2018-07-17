@@ -25,7 +25,7 @@ module.exports = {
     ]
   },
   output: {
-    path: path.join(__dirname, "../build/js"),
+    path: path.join(__dirname, "../build"),
     filename: "[name].bundle.js",
     chunkFilename: "[id].chunk.js"
   },
@@ -51,11 +51,18 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.ttf$/,
+        use: {
+          loader: "url-loader"
+        }
+      },
+      {
         test: /\.js$/,
         exclude: /(node_modules|bower_components)/,
         use: {
           loader: "babel-loader",
           options: {
+            plugins: ["@babel/plugin-proposal-class-properties"],
             presets: [
               "@babel/preset-react",
               [

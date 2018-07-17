@@ -20,5 +20,6 @@ export const MESSAGE_TYPES = {
   get_gist_content: "get_gist_content",
   apply_stylesheets: "apply_stylesheets",
   style_diff_changed: "style_diff_changed",
-  send_content_stylesheets: "send_stylesheets"
+  send_content_stylesheets: "send_stylesheets",
+  log: "log"
 };

@@ -11,6 +11,7 @@ import { MESSAGE_TYPES, portName, tabIdFromPortName } from "./lib/port";
 import { shouldApplyStyleToURL } from "./lib/stylefile";
 import Bluebird from "bluebird";
 import diffSheet from "stylesheet-differ";
+import { loadScript } from "./background/inject";
 
 const PLUS_IMAGE_PATH = {
   "16": "img/plus_16x16.png",
@@ -161,7 +162,6 @@ const getTab = tabId =>
   });
 
 const handleMessage = (request, sender, sendResponse) => {
-  console.log("MESSAGE", request);
   if (!request.type) {
     console.error(
       "[background] request type must be one of",
@@ -170,19 +170,29 @@ const handleMessage = (request, sender, sendResponse) => {
     return;
   }
 
+  if (request.type === MESSAGE_TYPES.log) {
+    console.log.apply(this, request.value);
+    return;
+  }
+
   if (request.type === MESSAGE_TYPES.send_content_stylesheets) {
-    console.log("[background] received content stylesheets");
+    log("Received content stylesheets", request.value);
     if (!TAB_ORIGINAL_STYLES[request.tabId]) {
       TAB_ORIGINAL_STYLES[request.tabId] = request.value;
     } else {
       const contentStyles = request.value;
-      const existingSheets = Object.keys(TAB_ORIGINAL_STYLES[request.tabId]);
-      Object.keys(contentStyles).forEach(sUrl => {
-        if (existingSheets.indexOf(sUrl) === -1) {
+      const existingSheets = TAB_ORIGINAL_STYLES[request.tabId];
+      contentStyles.forEach(style => {
+        const index = _.findIndex(
+          existingSheets,
+          sheet => sheet.url === style.url
+        );
+        if (index === -1) {
           TAB_ORIGINAL_STYLES[request.tabId][sUrl] = contentStyles[sUrl];
         }
       });
     }
+    return;
   }
 
   if (request.type === MESSAGE_TYPES.get_gist_content) {
@@ -221,7 +231,7 @@ const handleMessage = (request, sender, sendResponse) => {
         tabId: request.tabId,
         title: "Export CSS changes to Gist with StyleURL"
       });
-      chrome.browserAction.setPopup({ tabId: request.tabId, popup: "" });
+      // chrome.browserAction.setPopup({ tabId: request.tabId, popup: "" });
     } else {
       chrome.browserAction.setIcon(
         {
@@ -234,7 +244,7 @@ const handleMessage = (request, sender, sendResponse) => {
         tabId: request.tabId,
         title: "StyleURL"
       });
-      chrome.browserAction.setPopup({ tabId, popup: "popup.html" });
+      // chrome.browserAction.setPopup({ tabId, popup: "popup.html" });
     }
 
     return;
@@ -245,7 +255,7 @@ const handleMessage = (request, sender, sendResponse) => {
   }
 
   if (request.type === MESSAGE_TYPES.get_styles_diff) {
-    console.log("[background] REceived styles!");
+    log("Received styles!");
 
     getTab(request.tabId)
       .then(tab => {
@@ -254,23 +264,21 @@ const handleMessage = (request, sender, sendResponse) => {
           return Promise.reject();
         }
 
-        let modifiedSheets = request.value.stylesheets;
+        let modifiedSheets = request.value.stylesheets.slice();
 
         const currentStyles = request.value.general_stylesheets;
         const oldStyles = TAB_ORIGINAL_STYLES[request.tabId];
         if (oldStyles) {
-          Object.keys(oldStyles).forEach(oldUrl => {
-            const newStyle = currentStyles[oldUrl];
-            const oldStyle = oldStyles[oldUrl];
-            console.log(oldUrl, oldStyle, newStyle);
-            const diffedStyle = diffSheet(oldStyle, newStyle);
+          oldStyles.forEach(oldStyle => {
+            const newStyle = currentStyles.find(
+              style => style.url === oldStyle.url
+            );
+            const diffedStyle = diffSheet(oldStyle.content, newStyle.content);
             if (diffedStyle && diffedStyle.trim().length > 0) {
-              modifiedSheets.push({ url: oldUrl, content: diffedStyle });
+              modifiedSheets.push({ url: oldStyle.url, content: diffedStyle });
             }
           });
         }
-
-        console.log(modifiedSheets);
 
         return uploadStylesheets({
           stylesheets: modifiedSheets,
@@ -315,7 +323,7 @@ chrome.runtime.onConnect.addListener(function(port) {
       },
       log
     );
-    chrome.browserAction.setPopup({ tabId, popup: "popup.html" });
+    // chrome.browserAction.setPopup({ tabId, popup: "popup.html" });
     chrome.browserAction.setTitle({ tabId, title: "StyleURL" });
   });
 });
@@ -331,7 +339,23 @@ const createStyleURL = tab => {
   port.postMessage({ type: MESSAGE_TYPES.get_styles_diff }, handleMessage);
 };
 
-chrome.browserAction.onClicked.addListener(createStyleURL);
+chrome.browserAction.onClicked.addListener(tab => {
+  log("TAB", tab);
+  // createStyleURL(tab);
+  chrome.tabs.query(
+    {
+      active: true,
+      lastFocusedWindow: true
+    },
+    function(tabs) {
+      const tab = tabs[0];
+      if (!tab) {
+        return;
+      }
+      loadScript("inject", tab.id);
+    }
+  );
+});
 
 chrome.runtime.onMessage.addListener(handleMessage);
 
@@ -406,4 +430,4 @@ chrome.tabs.onRemoved.addListener(tabId => {
   }
 });
 
-chrome.browserAction.setPopup({ popup: "popup.html" });
+// chrome.browserAction.setPopup({ popup: "popup.html" });

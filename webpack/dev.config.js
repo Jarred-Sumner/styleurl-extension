@@ -1,6 +1,9 @@
 const path = require("path");
 const webpack = require("webpack");
 const WriteAssetsWebpackPlugin = require("write-assets-webpack-plugin");
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 
 const autoprefixer = require("autoprefixer");
 
@@ -18,11 +21,8 @@ module.exports = {
   },
 
   entry: {
-    popup: [
-      customPath,
-      hotScript,
-      path.join(__dirname, "../chrome/extension/popup")
-    ],
+    popup: [customPath, path.join(__dirname, "../chrome/extension/popup")],
+    inject: [customPath, path.join(__dirname, "../chrome/extension/inject")],
     background: [
       customPath,
       hotScript,
@@ -39,7 +39,7 @@ module.exports = {
     ]
   },
   devMiddleware: {
-    publicPath: `http://${host}:${port}/js`,
+    publicPath: `http://${host}:${port}/`,
     stats: {
       colors: true
     },
@@ -48,14 +48,18 @@ module.exports = {
   },
   mode: "development",
   hotMiddleware: {
-    path: "/js/__webpack_hmr"
+    path: "/__webpack_hmr"
   },
   output: {
-    path: path.join(__dirname, "../dev/js"),
+    path: path.join(__dirname, "../dev"),
     filename: "[name].bundle.js",
     chunkFilename: "[id].chunk.js"
   },
   plugins: [
+    new webpack.ContextReplacementPlugin(
+      /monaco-editor(\\|\/)esm(\\|\/)vs(\\|\/)editor(\\|\/)common(\\|\/)services/,
+      __dirname
+    ),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoEmitOnErrorsPlugin(),
     new webpack.IgnorePlugin(/[^/]+\/[\S]+.prod$/),
@@ -67,7 +71,14 @@ module.exports = {
         NODE_ENV: JSON.stringify("development")
       }
     }),
-    new WriteAssetsWebpackPlugin({ force: true, extension: ["js"] })
+    new MiniCssExtractPlugin({
+      // Options similar to the same options in webpackOptions.output
+      // both options are optional
+      filename: "[name].css",
+      chunkFilename: "[id].css"
+    }),
+    new MonacoWebpackPlugin(),
+    new WriteAssetsWebpackPlugin({ force: true, extension: ["js", "css"] })
   ],
   resolve: {
     extensions: ["*", ".js"],
@@ -78,11 +89,18 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.ttf$/,
+        use: {
+          loader: "file-loader"
+        }
+      },
+      {
         test: /\.js$/,
         exclude: /(node_modules|bower_components)/,
         use: {
           loader: "babel-loader",
           options: {
+            plugins: ["@babel/plugin-proposal-class-properties"],
             presets: [
               "@babel/preset-react",
               [
@@ -101,10 +119,15 @@ module.exports = {
       {
         test: /\.css$/,
         use: [
-          "style-loader",
+          {
+            loader: MiniCssExtractPlugin.loader
+          },
           { loader: "css-loader", options: { importLoaders: 1 } },
           {
-            loader: "postcss-loader"
+            loader: "postcss-loader",
+            options: {
+              exclude: /(node_modules|bower_components)/
+            }
           }
         ]
       }

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { render } from "react-dom";
 import Dock from "react-dock";
-import { MESSAGE_TYPES, INITIAL_WIDTH } from "./popup/messages";
+import { MESSAGE_TYPES, INITIAL_WIDTH } from "./create_styleurl/messages";
 
 class InjectApp extends Component {
   constructor(props) {
@@ -30,7 +30,7 @@ class InjectApp extends Component {
   render() {
     return (
       <Dock
-        position="right"
+        position="top"
         dimMode="none"
         defaultSize={INITIAL_WIDTH}
         fluid={false}
@@ -45,7 +45,7 @@ class InjectApp extends Component {
           }}
           frameBorder={0}
           allowTransparency="true"
-          src={chrome.extension.getURL(`popup.html`)}
+          src={chrome.extension.getURL(`create_styleurl.html`)}
         />
       </Dock>
     );

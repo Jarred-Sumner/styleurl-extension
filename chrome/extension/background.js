@@ -1,5 +1,4 @@
 import _ from "lodash";
-import S3Upload from "react-s3-uploader/s3upload";
 import {
   applyStyleURLToTabID,
   getGistById,
@@ -7,32 +6,51 @@ import {
   loadStylefileFromGist,
   SPECIAL_QUERY_PARAMS
 } from "./lib/gists";
-import { MESSAGE_TYPES, portName, tabIdFromPortName } from "./lib/port";
+import {
+  MESSAGE_TYPES,
+  portName,
+  tabIdFromPortName,
+  PORT_TYPES
+} from "./lib/port";
 import { shouldApplyStyleToURL } from "./lib/stylefile";
 import Bluebird from "bluebird";
 import diffSheet from "stylesheet-differ";
 import { loadScript } from "./background/inject";
+import Messenger from "chrome-ext-messenger";
+import { toFile } from "./lib/toFile";
+import {
+  uploadStylesheets,
+  uploadScreenshot,
+  SCREENSHOT_CONTENT_TYPE
+} from "./lib/api";
+import {
+  setBrowserActionToDefault,
+  setBrowserActionToUploadStyle,
+  setBrowserActionToStyleApplied,
+  getBrowserActionState,
+  BROWSER_ACTION_STATES
+} from "./lib/browserAction";
 
-const PLUS_IMAGE_PATH = {
-  "16": "img/plus_16x16.png",
-  "19": "img/plus_19x19.png",
-  "38": "img/plus_38x38.png",
-  "48": "img/plus_48x48.png",
-  "128": "img/plus_128x128.png"
-};
+global.Promise = Bluebird;
 
-const DEFAULT_ICON_PATH = {
-  "16": "img/default_16x16.png",
-  "19": "img/default_19x19.png",
-  "38": "img/default_38x38.png",
-  "48": "img/default_48x48.png",
-  "128": "img/default_128x128.png"
-};
+let devtoolConnection;
+let gistConnection;
+const messenger = new Messenger();
+
+messenger.initBackgroundHub({
+  connectedHandler: function(extensionPart, connectionName, tabId) {},
+  disconnectedHandler: function(extensionPart, connectionName, tabId) {
+    if (
+      extensionPart === "devtool" &&
+      getBrowserActionState() === BROWSER_ACTION_STATES.upload_style
+    ) {
+      setBrowserActionToDefault({ tabId });
+    }
+  }
+});
 
 const log = (...messages) =>
   console.log.apply(console, ["[Background]", ...messages]);
-
-const SCREENSHOT_CONTENT_TYPE = "image/png";
 
 const TAB_IDS_TO_APPLY_STYLES = {};
 const TAB_ORIGINAL_STYLES = {};
@@ -63,301 +81,173 @@ const stopMonitoringTabID = (tabId, gistId) => {
   }
 };
 
-global.Promise = Bluebird;
-
-const buildURL = path => {
-  return __API_HOST__ + path;
-};
-
-const toBlob = base64String => {
-  return window.fetch(base64String).then(res => res.blob());
-};
-
-const toFile = async base64String => {
-  const blob = await toBlob(base64String);
-
-  Object.defineProperty(blob, "name", {
-    get: function() {
-      return "photo.png";
-    }
-  });
-
-  Object.defineProperty(blob, "type", {
-    get: function() {
-      return SCREENSHOT_CONTENT_TYPE;
-    }
-  });
-
-  return blob;
-};
-
-const uploaders = {};
-
-const apiFetch = (path, options = {}) => {
-  return window
-    .fetch(buildURL(path), {
-      ...options,
-      credentials: "include",
-      headers: {
-        ...(options.headers || {}),
-        "User-Agent": `StyleURL v${chrome.app.getDetails().version} (${
-          process.env.NODE_ENV
-        })`,
-        "Content-Type": "application/json"
-      }
-    })
-    .then(response => response.json())
-    .catch(error => {
-      console.error(error);
-      return {
-        success: false
-      };
-    });
-};
-
-const uploadStylesheets = async ({ stylesheets, url }) => {
-  return apiFetch("/api/stylesheet_groups", {
-    method: "POST",
-    body: JSON.stringify({
-      url,
-      stylesheets
-    })
-  });
-};
-
-const processScreenshot = ({
-  key: stylesheet_key,
-  domain: stylesheet_domain
-}) => ({ publicUrl: url }) => {
-  return apiFetch("/api/photos/process", {
-    method: "POST",
-    body: JSON.stringify({
-      url,
-      stylesheet_key,
-      stylesheet_domain,
-      content_type: SCREENSHOT_CONTENT_TYPE
-    })
-  }).then(() => {
-    delete uploaders[stylesheet_key];
-  });
-};
-
-const uploadScreenshot = ({ key, domain, photo }) => {
-  uploaders[key] = new S3Upload({
-    files: [photo],
-    signingUrl: "/api/photos/presign",
-    onFinishS3Put: processScreenshot({ key, domain }),
-    onError: error => {
-      console.error(error);
-      delete uploaders[key];
-    },
-    server: __API_HOST__,
-    uploadRequestHeaders: {}
-  });
-};
-
 const getTab = tabId =>
   new Promise((resolve, reject) => {
     chrome.tabs.get(tabId, resolve);
   });
 
-const handleMessage = (request, sender, sendResponse) => {
-  if (!request.type) {
-    console.error(
-      "[background] request type must be one of",
-      _.values(MESSAGE_TYPES)
-    );
+const getTabId = sender => parseInt(_.last(sender.split("::")), 10);
+
+const handleGistContentScriptMessages = async (
+  request,
+  from,
+  sender,
+  sendResponse
+) => {
+  const { type = null } = request;
+
+  const types = MESSAGE_TYPES;
+
+  if (!type) {
     return;
   }
 
-  if (request.type === MESSAGE_TYPES.log) {
-    console.log.apply(this, request.value);
+  if (!_.values(types).includes(type)) {
+    console.error("[background] request type must be one of", _.values(types));
     return;
   }
 
-  if (request.type === MESSAGE_TYPES.send_content_stylesheets) {
+  if (type === types.get_gist_content) {
+    if (!request.url) {
+      console.error("[background] invalid get_gist_content: missing url");
+      sendResponse({ success: false });
+      return;
+    }
+
+    return window
+      .fetch(request.url, {
+        redirect: "follow",
+        credentials: "include"
+      })
+      .then(response => response.text())
+      .then(value => {
+        return sendResponse({
+          url: request.url,
+          response: true,
+          value
+        });
+      });
+  }
+};
+
+const handleDevtoolMessages = async (request, from, sender, sendResponse) => {
+  const { type = null } = request;
+  const types = MESSAGE_TYPES;
+
+  if (!type) {
+    return;
+  }
+
+  if (!_.values(types).includes(type)) {
+    console.error("[background] request type must be one of", _.values(types));
+    return;
+  }
+
+  const tabId = getTabId(from);
+  const tab = await getTab(tabId);
+
+  if (type === types.log) {
+    console.log.apply(console, request.value);
+  } else if (type === types.send_content_stylesheets) {
     log("Received content stylesheets", request.value);
-    if (!TAB_ORIGINAL_STYLES[request.tabId]) {
-      TAB_ORIGINAL_STYLES[request.tabId] = request.value;
+    if (!TAB_ORIGINAL_STYLES[tabId]) {
+      TAB_ORIGINAL_STYLES[tabId] = request.value;
     } else {
       const contentStyles = request.value;
-      const existingSheets = TAB_ORIGINAL_STYLES[request.tabId];
+      const existingSheets = TAB_ORIGINAL_STYLES[tabId];
       contentStyles.forEach(style => {
         const index = _.findIndex(
           existingSheets,
           sheet => sheet.url === style.url
         );
         if (index === -1) {
-          TAB_ORIGINAL_STYLES[request.tabId][sUrl] = contentStyles[sUrl];
+          TAB_ORIGINAL_STYLES[tabId][sUrl] = contentStyles[sUrl];
         }
       });
     }
-    return;
-  }
-
-  if (request.type === MESSAGE_TYPES.get_gist_content) {
-    if (!request.url) {
-      console.error("[background] invalid get_gist_content: missing url");
-      sendResponse({ success: false });
-      return true;
-    }
-
-    window
-      .fetch(request.url, {
-        redirect: "follow",
-        credentials: "include"
-      })
-      .then(response => response.text())
-      .then(content => {
-        sendResponse({
-          type: MESSAGE_TYPES.get_gist_content,
-          url: request.url,
-          response: true,
-          content
-        });
-      });
-
-    return true;
-  } else if (request.type === MESSAGE_TYPES.style_diff_changed) {
+  } else if (type === types.style_diff_changed) {
     if (request.value.stylesheets.length > 0) {
-      chrome.browserAction.setIcon(
-        {
-          tabId: request.tabId,
-          path: PLUS_IMAGE_PATH
-        },
-        log
-      );
-      chrome.browserAction.setTitle({
-        tabId: request.tabId,
-        title: "Export CSS changes to Gist with StyleURL"
+      setBrowserActionToUploadStyle({
+        tabId: tabId,
+        styleCount: request.value.stylesheets.length
       });
-      // chrome.browserAction.setPopup({ tabId: request.tabId, popup: "" });
+      // chrome.browserAction.setPopup({ tabId: tabId, popup: "" });
     } else {
-      chrome.browserAction.setIcon(
-        {
-          tabId: request.tabId,
-          path: DEFAULT_ICON_PATH
-        },
-        log
-      );
-      chrome.browserAction.setTitle({
-        tabId: request.tabId,
-        title: "StyleURL"
-      });
+      setBrowserActionToDefault({ tabId: tabId });
       // chrome.browserAction.setPopup({ tabId, popup: "popup.html" });
     }
-
-    return;
-  }
-
-  if (!request.response) {
-    console.info("[background] ignoring request that is not a response");
-  }
-
-  if (request.type === MESSAGE_TYPES.get_styles_diff) {
+  } else if (type === types.get_styles_diff) {
     log("Received styles!");
-
-    getTab(request.tabId)
-      .then(tab => {
-        if (!tab || !tab.url) {
-          alert("Something didnt work quite right. Please try again!");
-          return Promise.reject();
-        }
-
-        let modifiedSheets = request.value.stylesheets.slice();
-
-        const currentStyles = request.value.general_stylesheets;
-        const oldStyles = TAB_ORIGINAL_STYLES[request.tabId];
-        if (oldStyles) {
-          oldStyles.forEach(oldStyle => {
-            const newStyle = currentStyles.find(
-              style => style.url === oldStyle.url
-            );
-            const diffedStyle = diffSheet(oldStyle.content, newStyle.content);
-            if (diffedStyle && diffedStyle.trim().length > 0) {
-              modifiedSheets.push({ url: oldStyle.url, content: diffedStyle });
-            }
-          });
-        }
-
-        return uploadStylesheets({
-          stylesheets: modifiedSheets,
-          url: tab.url
-        });
-      })
-      .then(stylesheetResponse => {
-        if (stylesheetResponse.success) {
-          chrome.tabs.captureVisibleTab(null, { format: "png" }, async function(
-            photo
-          ) {
-            chrome.tabs.create({ url: stylesheetResponse.data.url });
-            // Capturing the photo fails sometimes shrug
-            if (photo) {
-              uploadScreenshot({
-                photo: await toFile(photo),
-                key: stylesheetResponse.data.id,
-                domain: stylesheetResponse.data.domain
-              });
-            }
-          });
-        } else {
-          alert("Something didnt work quite right. Please try again!");
+    if (!tab || !tab.url) {
+      alert("Something didnt work quite right. Please try again!");
+    }
+    let modifiedSheets = request.value.stylesheets.slice();
+    const currentStyles = request.value.general_stylesheets;
+    const oldStyles = TAB_ORIGINAL_STYLES[tabId];
+    if (oldStyles) {
+      oldStyles.forEach(oldStyle => {
+        const newStyle = currentStyles.find(
+          style => style.url === oldStyle.url
+        );
+        const diffedStyle = diffSheet(oldStyle.content, newStyle.content);
+        if (diffedStyle && diffedStyle.trim().length > 0) {
+          modifiedSheets.push({ url: oldStyle.url, content: diffedStyle });
         }
       });
+    }
+    return uploadStylesheets({
+      stylesheets: modifiedSheets,
+      url: tab.url
+    }).then(stylesheetResponse => {
+      if (stylesheetResponse.success) {
+        chrome.tabs.captureVisibleTab(null, { format: "png" }, async function(
+          photo
+        ) {
+          chrome.tabs.create({ url: stylesheetResponse.data.url });
+          // Capturing the photo fails sometimes shrug
+          if (photo) {
+            uploadScreenshot({
+              photo: await toFile(photo, SCREENSHOT_CONTENT_TYPE),
+              key: stylesheetResponse.data.id,
+              domain: stylesheetResponse.data.domain
+            });
+          }
+        });
+      } else {
+        alert("Something didnt work quite right. Please try again!");
+      }
+    });
   }
 };
 
-const ports = {};
-
-chrome.runtime.onConnect.addListener(function(port) {
-  ports[port.name] = port;
-
-  console.log("NEW PORT", port.name);
-  port.onMessage.addListener(handleMessage);
-  port.onDisconnect.addListener(() => {
-    const tabId = tabIdFromPortName(port.name);
-    chrome.browserAction.setIcon(
-      {
-        tabId: tabId,
-        path: DEFAULT_ICON_PATH
-      },
-      log
-    );
-    // chrome.browserAction.setPopup({ tabId, popup: "popup.html" });
-    chrome.browserAction.setTitle({ tabId, title: "StyleURL" });
-  });
-});
-
 const createStyleURL = tab => {
-  const port = ports[portName(tab.id)];
-
-  if (!port) {
-    alert("Please open devtools and try again");
-    return;
-  }
-
-  port.postMessage({ type: MESSAGE_TYPES.get_styles_diff }, handleMessage);
+  return devtoolConnection.sendMessage(
+    `devtool:${PORT_TYPES.devtool_widget}:${tab.id}`,
+    { type: MESSAGE_TYPES.get_styles_diff }
+  );
 };
 
 chrome.browserAction.onClicked.addListener(tab => {
-  log("TAB", tab);
-  // createStyleURL(tab);
-  chrome.tabs.query(
-    {
-      active: true,
-      lastFocusedWindow: true
-    },
-    function(tabs) {
-      const tab = tabs[0];
-      if (!tab) {
-        return;
+  console.log("Clicked Browser Action", getBrowserActionState());
+  if (getBrowserActionState() === BROWSER_ACTION_STATES.default) {
+  } else if (getBrowserActionState() === BROWSER_ACTION_STATES.upload_style) {
+    createStyleURL(tab);
+  } else if (getBrowserActionState() === BROWSER_ACTION_STATES.style_applied) {
+    chrome.tabs.query(
+      {
+        active: true,
+        lastFocusedWindow: true
+      },
+      function(tabs) {
+        const tab = tabs[0];
+        if (!tab) {
+          return;
+        }
+        loadScript("inject", tab.id);
       }
-      loadScript("inject", tab.id);
-    }
-  );
+    );
+  }
 });
-
-chrome.runtime.onMessage.addListener(handleMessage);
 
 chrome.webNavigation.onBeforeNavigate.addListener(
   async ({ tabId, url }) => {
@@ -409,17 +299,12 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   )
     .then(appliedStyles => appliedStyles.filter(_.identity))
     .then(appliedStyles => {
-      const stylesCount = appliedStyles.length;
-      if (stylesCount > 0) {
-        chrome.browserAction.setBadgeText({
-          text: `${stylesCount}`,
-          tabId: tabId
-        });
+      const styleCount = appliedStyles.length;
+      if (styleCount > 0) {
+        setBrowserActionToStyleApplied({ tabId, styleCount });
       } else {
-        chrome.browserAction.setBadgeText({
-          text: "",
-          tabId: tabId
-        });
+        // TODO: see if this is too aggro
+        setBrowserActionToDefault({ tabId });
       }
     });
 });
@@ -430,4 +315,12 @@ chrome.tabs.onRemoved.addListener(tabId => {
   }
 });
 
-// chrome.browserAction.setPopup({ popup: "popup.html" });
+devtoolConnection = messenger.initConnection(
+  PORT_TYPES.devtool_widget,
+  handleDevtoolMessages
+);
+
+gistConnection = messenger.initConnection(
+  PORT_TYPES.github_gist,
+  handleGistContentScriptMessages
+);

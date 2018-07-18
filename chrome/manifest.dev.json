@@ -11,7 +11,12 @@
     "48": "img/default_48x48.png",
     "128": "img/default_128x128.png"
   },
-  "web_accessible_resources": ["popup.html", "inject.html", "*.js", "*.css"],
+  "web_accessible_resources": [
+    "create_styleurl.html",
+    "inject.html",
+    "*.js",
+    "*.css"
+  ],
   "background": {
     "page": "background.html"
   },

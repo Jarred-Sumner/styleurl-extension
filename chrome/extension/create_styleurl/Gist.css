@@ -1,0 +1,81 @@
+#gist_root,
+#gist_root body {
+    margin: 0;
+    padding: 0;
+}
+
+#gist_root {
+    width: auto;
+}
+
+#gist_root .gist {
+    display: block !important;
+    position: relative !important;
+}
+
+#gist_root .gist-file {
+    border: none !important;
+    display: flex;
+    flex-direction: column-reverse;
+    margin-bottom: 0;
+}
+
+.gist-data,
+.file-box,
+.file,
+.blob-wrapper,
+.js-file-line-container {
+    width: auto;
+}
+
+#gist_root .gist-data {
+    background-color: #272822 !important;
+    padding: 15px 5px !important;
+    border: 0 !important;
+    border-bottom: none !important;
+    border-radius: 0px;
+}
+
+#gist_root .gist .highlight {
+    background-color: #272822 !important;
+}
+
+#gist_root .gist .gist-meta {
+    border-radius: 0;
+    background-color: rgb(65, 65, 67);
+}
+
+#gist_root .gist .gist-meta,
+#gist_root .gist .gist-meta a {
+    color: white;
+}
+
+#gist_root .blob-num {
+    border: solid #464741 !important;
+    border-width: 0 1px 0 0 !important;
+}
+
+/* MONOKAI THEME SYNTAX HIGHLIGHTING - NOT COMPLETE */
+#gist_root .blob-code-inner, #gist_root .pl-c1 {
+    color: rgb(78, 198, 234) !important;
+}
+
+#gist_root .js-line-number {
+    color: #8f908a !important;
+}
+
+#gist_root .pl-ent {
+    color: #fc1f70 !important;
+}
+
+#gist_root .pl-e {
+    color: #a4e402 !important;
+}
+
+#gist_root .pl-c {
+    color: #75715d !important;
+}
+
+#gist_root .pl-s, .pl-pds {
+    color: #e6dc6d !important;
+}

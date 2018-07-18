@@ -7,12 +7,13 @@ const CHROME_PORT_PREFIX =
     ? PROD_CHROME_PORT_PREFIX
     : DEV_CHROME_PORT_PREFIX;
 
-export const portName = tabId => {
-  return CHROME_PORT_PREFIX + `tab/${tabId}`;
-};
-
 export const tabIdFromPortName = _portName => {
   return parseInt(_.last(_portName.split("tab/")), 10);
+};
+
+export const PORT_TYPES = {
+  github_gist: "github_gist",
+  devtool_widget: "devtool_widget"
 };
 
 export const MESSAGE_TYPES = {
@@ -22,4 +23,10 @@ export const MESSAGE_TYPES = {
   style_diff_changed: "style_diff_changed",
   send_content_stylesheets: "send_stylesheets",
   log: "log"
+};
+
+export const STYLESHEET_TYPE = {
+  inspector: "inspector",
+  remote: "remote",
+  style_tag: "style_tag"
 };

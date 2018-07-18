@@ -1,11 +1,13 @@
 import _ from "lodash";
-import { portName, MESSAGE_TYPES } from "./lib/port";
-import Bluebird from "bluebird";
+import { portName, MESSAGE_TYPES, PORT_TYPES } from "./lib/port";
+import Messenger from "chrome-ext-messenger";
 
-let port;
+const messenger = new Messenger();
+
+let connection;
 
 const log = (...messages) => {
-  chrome.runtime.sendMessage({
+  connection.sendMessage(`background:${PORT_TYPES.devtool_widget}`, {
     type: MESSAGE_TYPES.log,
     value: ["[DEVTOOLS]", ...messages]
   });
@@ -25,14 +27,14 @@ const isGeneralStyle = resource => {
 };
 
 const getResources = () =>
-  new Bluebird((resolve, reject) =>
+  new Promise((resolve, reject) =>
     chrome.devtools.inspectedWindow.getResources(resources => {
       resolve(resources);
     })
   );
 
 const getResourceContent = resource =>
-  new Bluebird((resolve, reject) => {
+  new Promise((resolve, reject) => {
     log("GET", resource.url);
     resource.getContent(content => {
       resolve({
@@ -94,13 +96,13 @@ const getStyleTags = () =>
 const getLoadedSheets = () => {
   return getResources()
     .then(resources => resources.filter(isGeneralStyle))
-    .then(stylesheets => Bluebird.all(stylesheets.map(getResourceContent)))
+    .then(stylesheets => Promise.all(stylesheets.map(getResourceContent)))
     .catch(error => alert(error));
 };
 
 const getGeneralStyles = () =>
-  new Bluebird((resolve, reject) => {
-    Bluebird.all([getStyleTags(), getLoadedSheets()]).then(allStyles => {
+  new Promise((resolve, reject) => {
+    Promise.all([getStyleTags(), getLoadedSheets()]).then(allStyles => {
       const filteredStyles = _
         .compact(_.flatten(allStyles))
         .filter(o => !_.isEmpty(o));
@@ -112,29 +114,23 @@ const getGeneralStyles = () =>
 const getInspectorStyles = () => {
   return getResources()
     .then(resources => resources.filter(isInspectorStyle))
-    .then(stylesheets => Bluebird.all(stylesheets.map(getResourceContent)))
+    .then(stylesheets => Promise.all(stylesheets.map(getResourceContent)))
     .catch(error => alert(error));
 };
 
-const createPort = () => {
-  return chrome.runtime.connect({
-    name: portName(chrome.devtools.inspectedWindow.tabId)
-  });
+const createConnection = () => {
+  return messenger.initConnection(
+    PORT_TYPES.devtool_widget,
+    handleReceivedMessage
+  );
 };
 
-const handleReceivedMessage = (request, sender, sendResponse) => {
-  log("Message", request);
-  if (!request.type) {
-    log("request type must be one of", _.values(MESSAGE_TYPES));
-    return;
-  }
-
+const handleReceivedMessage = (request, from, sender, sendResponse) => {
   if (request.type === MESSAGE_TYPES.get_styles_diff) {
     return Promise.all([getInspectorStyles(), getGeneralStyles()]).then(
       promises => {
-        port.postMessage({
+        connection.sendMessage(`background:${PORT_TYPES.devtool_widget}`, {
           type: MESSAGE_TYPES.get_styles_diff,
-          tabId: chrome.devtools.inspectedWindow.tabId,
           response: true,
           value: {
             stylesheets: promises[0],
@@ -153,14 +149,12 @@ const handleReceivedMessage = (request, sender, sendResponse) => {
 const sendStyleDiffChangedEvent = el => {
   if (!el || isInspectorStyle(el)) {
     getInspectorStyles().then(stylesheets => {
-      if (!port || _.isEmpty(stylesheets)) {
+      if (!connection || _.isEmpty(stylesheets)) {
         return;
       }
 
-      port.postMessage({
+      connection.sendMessage(`background:${PORT_TYPES.devtool_widget}`, {
         type: MESSAGE_TYPES.style_diff_changed,
-        tabId: chrome.devtools.inspectedWindow.tabId,
-        response: false,
         value: {
           stylesheets
         }
@@ -171,33 +165,30 @@ const sendStyleDiffChangedEvent = el => {
 
 const sendContentStyles = () => {
   getGeneralStyles().then(stylesheets => {
-    if (!port) {
+    if (!connection) {
       return;
     }
 
-    port.postMessage({
+    connection.sendMessage(`background:${PORT_TYPES.devtool_widget}`, {
       type: MESSAGE_TYPES.send_content_stylesheets,
-      tabId: chrome.devtools.inspectedWindow.tabId,
-      response: false,
       value: stylesheets
     });
   });
 };
 
-const setupPort = () => {
-  port = createPort();
+const setupConnection = () => {
+  connection = createConnection();
   sendStyleDiffChangedEvent();
-  port.onMessage.addListener(handleReceivedMessage);
   sendContentStyles();
 };
 
 chrome.devtools.network.onNavigated.addListener(function() {
-  if (port) {
-    port.disconnect();
+  if (connection) {
+    connection.disconnect();
   }
 
   if (_.isNumber(chrome.devtools.inspectedWindow.tabId)) {
-    setupPort();
+    setupConnection();
   }
 });
 
@@ -212,5 +203,4 @@ chrome.devtools.inspectedWindow.onResourceAdded.addListener(
 
 // chrome.devtools.inspectedWindow.onResourceAdded.addListener(sendContentStyles);
 // above causes inf loop, not sure why
-
-setupPort();
+setupConnection();

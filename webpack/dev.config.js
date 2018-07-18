@@ -3,7 +3,6 @@ const webpack = require("webpack");
 const WriteAssetsWebpackPlugin = require("write-assets-webpack-plugin");
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 
 const autoprefixer = require("autoprefixer");
 
@@ -21,7 +20,10 @@ module.exports = {
   },
 
   entry: {
-    popup: [customPath, path.join(__dirname, "../chrome/extension/popup")],
+    create_styleurl: [
+      customPath,
+      path.join(__dirname, "../chrome/extension/create_styleurl")
+    ],
     inject: [customPath, path.join(__dirname, "../chrome/extension/inject")],
     background: [
       customPath,
@@ -77,7 +79,6 @@ module.exports = {
       filename: "[name].css",
       chunkFilename: "[id].css"
     }),
-    new MonacoWebpackPlugin(),
     new WriteAssetsWebpackPlugin({ force: true, extension: ["js", "css"] })
   ],
   resolve: {
@@ -100,14 +101,14 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
-            plugins: ["@babel/plugin-proposal-class-properties"],
+            plugins: ["@babel/plugin-proposal-class-properties", "lodash"],
             presets: [
               "@babel/preset-react",
               [
                 "@babel/preset-env",
                 {
                   targets: {
-                    browsers: ["chrome 66"]
+                    browsers: ["last 2 Chrome versions"]
                   }
                 }
               ]

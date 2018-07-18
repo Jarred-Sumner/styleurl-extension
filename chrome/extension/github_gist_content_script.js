@@ -1,6 +1,10 @@
-import { MESSAGE_TYPES } from "./lib/port";
+import { MESSAGE_TYPES, PORT_TYPES } from "./lib/port";
 import { SPECIAL_QUERY_PARAMS, STYLEFILE_NAMES } from "./lib/gists";
 import { loadStylefileFromString } from "./lib/stylefile";
+import Messenger from "chrome-ext-messenger";
+
+const messenger = new Messenger();
+const connection = messenger.initConnection(PORT_TYPES.github_gist);
 
 const getGistID = () => window.location.pathname.split("/")[2];
 
@@ -93,18 +97,14 @@ const getFileURL = filename => {
 };
 
 const getGistFileContents = filename => {
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(
-      {
-        type: MESSAGE_TYPES.get_gist_content,
-        url: getFileURL(filename),
-        response: false
-      },
-      response => {
-        resolve(response);
-      }
-    );
-  }).then(({ content }) => content);
+  return connection
+    .sendMessage(`background:${PORT_TYPES.github_gist}`, {
+      type: MESSAGE_TYPES.get_gist_content,
+      url: getFileURL(filename)
+    })
+    .then(({ value }) => {
+      return value;
+    });
 };
 
 if (isGistPage(location.pathname)) {

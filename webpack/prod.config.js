@@ -1,6 +1,7 @@
 const path = require("path");
 const webpack = require("webpack");
 const autoprefixer = require("autoprefixer");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const customPath = path.join(__dirname, "./customPublicPath");
 
@@ -10,7 +11,11 @@ module.exports = {
     net: "empty"
   },
   entry: {
-    popup: [customPath, path.join(__dirname, "../chrome/extension/popup")],
+    create_styleurl: [
+      customPath,
+      path.join(__dirname, "../chrome/extension/create_styleurl")
+    ],
+    inject: [customPath, path.join(__dirname, "../chrome/extension/inject")],
     background: [
       customPath,
       path.join(__dirname, "../chrome/extension/background")
@@ -40,6 +45,12 @@ module.exports = {
       "process.env": {
         NODE_ENV: JSON.stringify("production")
       }
+    }),
+    new MiniCssExtractPlugin({
+      // Options similar to the same options in webpackOptions.output
+      // both options are optional
+      filename: "[name].css",
+      chunkFilename: "[id].css"
     })
   ],
   resolve: {
@@ -53,7 +64,7 @@ module.exports = {
       {
         test: /\.ttf$/,
         use: {
-          loader: "url-loader"
+          loader: "file-loader"
         }
       },
       {
@@ -62,14 +73,14 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
-            plugins: ["@babel/plugin-proposal-class-properties"],
+            plugins: ["@babel/plugin-proposal-class-properties", "lodash"],
             presets: [
               "@babel/preset-react",
               [
                 "@babel/preset-env",
                 {
                   targets: {
-                    browsers: ["chrome 66"]
+                    browsers: ["last 2 Chrome versions"]
                   }
                 }
               ]
@@ -81,10 +92,15 @@ module.exports = {
       {
         test: /\.css$/,
         use: [
-          "style-loader",
+          {
+            loader: MiniCssExtractPlugin.loader
+          },
           { loader: "css-loader", options: { importLoaders: 1 } },
           {
-            loader: "postcss-loader"
+            loader: "postcss-loader",
+            options: {
+              exclude: /(node_modules|bower_components)/
+            }
           }
         ]
       }

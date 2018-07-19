@@ -2,6 +2,7 @@
     display: flex;
     align-items: center;
     border-radius: 4px;
+    margin: 8px 0;
     cursor: pointer;
 }
 
@@ -14,7 +15,7 @@
 }
 
 .Button--size-default {
-    padding: 4px 14px;
+    padding: 6px 14px;
 }
 
 .Button--color-blue {

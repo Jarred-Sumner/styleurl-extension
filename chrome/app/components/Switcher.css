@@ -1,0 +1,36 @@
+.Switcher, .SwitcherSide, .SwitcherSide-label {
+    display: flex;
+    align-items: center;
+}
+
+.Switcher, .SwitcherSide {
+    border-radius: 100px;
+}
+
+.Switcher {
+    justify-content: space-between;
+    align-self: center;
+    background-color: white;
+    cursor: pointer;
+}
+
+.SwitcherSide {
+    width: 152px;
+    padding: 8px 0;
+    text-align: center;
+    justify-content: center;
+    color: #050505;
+}
+
+.Switcher--on .SwitcherSide--on,
+.Switcher--off .SwitcherSide--off {
+    background-color: #5A95FF;
+    color: white;
+}
+
+.SwitcherSide-label {
+    color: inherit;
+    font-size: 14px;
+    font-weight: 600px;
+    line-height: 19px;
+}

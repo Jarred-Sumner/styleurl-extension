@@ -27,8 +27,8 @@ export class Dropdown extends React.Component {
         })}
       >
         <div onClick={this.handleToggleOpen} className="Dropdown-content">
-          {icon && <div className="Dropdown--icon">{icon}</div>}
-          {title && <div className="Dropdown--title">{title}</div>}
+          {icon && <div className="Dropdown-icon">{icon}</div>}
+          {title && <div className="Dropdown-title">{title}</div>}
         </div>
 
         {isOpen ? children : null}

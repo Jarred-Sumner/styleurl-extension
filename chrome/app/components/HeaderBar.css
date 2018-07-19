@@ -1,9 +1,11 @@
 .HeaderBar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     background-color: #13161B;
-    padding: 6px 28px;
+    padding: 0 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto;
+    align-items: center;
+    width: auto;
     opacity: 1;
 }
 
@@ -15,4 +17,12 @@
 .HeaderBar--hidden {
     opacity: 0;
     pointer-events: none;
+}
+
+.HeaderSide--right {
+    justify-content: flex-end;
+}
+
+.HeaderSide--center {
+    justify-content: center;
 }

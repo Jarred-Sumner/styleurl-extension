@@ -12,6 +12,7 @@ const applyStylesheetToTabId = (stylesheet, tabId) => {
   console.log("Inserting Stylesheet", stylesheet, "into tab", tabId);
   return chrome.tabs.insertCSS(tabId, {
     cssOrigin: "user",
+    allFrames: true,
     code: content,
     runAt: "document_start"
   });

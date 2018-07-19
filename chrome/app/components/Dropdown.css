@@ -1,0 +1,26 @@
+.Dropdown {
+    position: relative;
+}
+
+.Dropdown-content {
+    padding: 14px 18px;
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    color: white;
+}
+
+.Dropdown-content:hover,
+.Dropdown--open .Dropdown-content {
+    background-color: #21262F;
+}
+
+.Dropdown-title {
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 22px;
+}
+
+.Dropdown-icon {
+    margin-right: 8px;
+}

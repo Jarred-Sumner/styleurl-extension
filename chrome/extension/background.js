@@ -238,9 +238,11 @@ const handleDevtoolMessages = async (request, from, sender, sendResponse) => {
         const newStyle = currentStyles.find(
           style => style.url === oldStyle.url
         );
-        const diffedStyle = diffSheet(oldStyle.content, newStyle.content);
-        if (diffedStyle && diffedStyle.trim().length > 0) {
-          modifiedSheets.push({ url: oldStyle.url, content: diffedStyle });
+        if (newStyle.content) {
+          const diffedStyle = diffSheet(oldStyle.content, newStyle.content);
+          if (diffedStyle && diffedStyle.trim().length > 0) {
+            modifiedSheets.push({ url: oldStyle.url, content: diffedStyle });
+          }
         }
       });
     }

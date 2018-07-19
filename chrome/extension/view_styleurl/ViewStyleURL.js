@@ -1,9 +1,11 @@
 import React from "react";
 import Messenger from "chrome-ext-messenger";
+import "../create_styleurl.css";
 import { HeaderBar } from "app/components/HeaderBar";
 import { PORT_TYPES, MESSAGE_TYPES } from "../lib/port";
 import { Switcher } from "../../app/components/Switcher";
 import { Dropdown } from "../../app/components/Dropdown";
+import { Icon } from "../../app/components/Icon";
 
 const messenger = new Messenger();
 
@@ -28,9 +30,18 @@ class ViewStyleURL extends React.PureComponent {
           />
         }
       >
-        <Dropdown title="Fork" />
-        <Dropdown title="Code" />
-        <Dropdown title="Share" />
+        <Dropdown
+          icon={<Icon width={"18"} height="24" name="fork" />}
+          title="Fork"
+        />
+        <Dropdown
+          icon={<Icon width={"32"} height="20" name="code" />}
+          title="Code"
+        />
+        <Dropdown
+          icon={<Icon width={"24"} height="21" name="share" />}
+          title="Share"
+        />
       </HeaderBar>
     );
   }

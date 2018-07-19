@@ -12,7 +12,7 @@ export class Switcher extends React.PureComponent {
         onClick={this.handleToggle}
         className={classNames("Switcher", {
           "Switcher--on": !!on,
-          "Switcher-off": !on
+          "Switcher--off": !on
         })}
       >
         <div className="SwitcherSide SwitcherSide--on">

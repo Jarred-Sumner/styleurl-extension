@@ -13,16 +13,18 @@ const log = (...messages) => {
   });
 };
 
+const isResourceStyle = resource => resource.type === "stylesheet";
+
 const isInspectorStyle = resource => {
   const isStylesheet =
-    resource.url.startsWith("inspector://") && resource.type === "stylesheet";
+    resource.url.startsWith("inspector://") && isResourceStyle(resource);
   return isStylesheet;
 };
 
 const isGeneralStyle = resource => {
   const isStylesheet =
     resource.url.startsWith("inspector://") === false &&
-    resource.type === "stylesheet";
+    isResourceStyle(resource);
   return isStylesheet;
 };
 
@@ -127,29 +129,31 @@ const createConnection = () => {
 
 const handleReceivedMessage = (request, from, sender, sendResponse) => {
   if (request.type === MESSAGE_TYPES.get_styles_diff) {
-    return Promise.all([getInspectorStyles(), getGeneralStyles()]).then(
-      promises => {
-        connection.sendMessage(`background:${PORT_TYPES.devtool_widget}`, {
-          type: MESSAGE_TYPES.get_styles_diff,
-          response: true,
-          value: {
-            stylesheets: promises[0],
-            general_stylesheets: promises[1]
+    return Promise.all([getInspectorStyles(), getGeneralStyles()])
+      .then(promises => {
+        return connection.sendMessage(
+          `background:${PORT_TYPES.devtool_widget}`,
+          {
+            type: MESSAGE_TYPES.get_styles_diff,
+            response: true,
+            value: {
+              ...request.value,
+              stylesheets: promises[0],
+              general_stylesheets: promises[1]
+            }
           }
-        });
-
-        return true;
-      }
-    );
+        );
+      })
+      .then(response => sendResponse(response));
   }
 
   return true;
 };
 
 const sendStyleDiffChangedEvent = el => {
-  if (!el || isInspectorStyle(el)) {
+  if (isResourceStyle(el)) {
     getInspectorStyles().then(stylesheets => {
-      if (!connection || _.isEmpty(stylesheets)) {
+      if (!connection) {
         return;
       }
 
@@ -178,8 +182,8 @@ const sendContentStyles = () => {
 
 const setupConnection = () => {
   connection = createConnection();
-  sendStyleDiffChangedEvent();
   sendContentStyles();
+  sendStyleDiffChangedEvent();
 };
 
 chrome.devtools.network.onNavigated.addListener(function() {

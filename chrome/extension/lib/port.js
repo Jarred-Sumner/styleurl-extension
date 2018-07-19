@@ -13,6 +13,7 @@ export const tabIdFromPortName = _portName => {
 
 export const PORT_TYPES = {
   github_gist: "github_gist",
+  inline_header: "inline_header",
   devtool_widget: "devtool_widget"
 };
 
@@ -22,7 +23,9 @@ export const MESSAGE_TYPES = {
   apply_stylesheets: "apply_stylesheets",
   style_diff_changed: "style_diff_changed",
   send_content_stylesheets: "send_stylesheets",
-  log: "log"
+  log: "log",
+  create_style_url: "create_style_url",
+  send_success_notification: "send_success_notification"
 };
 
 export const STYLESHEET_TYPE = {

@@ -10,7 +10,10 @@ export const getGistById = id =>
   window
     .fetch(`https://api.github.com/gists/${id}`, {
       redirect: "follow",
-      credentials: "include"
+      credentials: "include",
+      headers: {
+        "Cache-Control": "public, max-age=9999999, s-maxage=9999999"
+      }
     })
     .then(resp => {
       return resp.json();
@@ -49,17 +52,4 @@ export const loadStylefileFromGist = gist => {
   }
 
   return loadStylefileFromString(gist.files[filename].content);
-};
-
-export const applyStyleURLToTabID = async (gist, tabId) => {
-  const stylesheets = getStylesheetsFromGist(gist);
-  stylesheets.forEach(stylesheet => {
-    const content = stylesheet[1];
-    console.log("Inserting Stylesheet", stylesheet, "into tab", tabId);
-    chrome.tabs.insertCSS(tabId, {
-      cssOrigin: "author",
-      code: content,
-      runAt: "document_start"
-    });
-  });
 };

@@ -29,12 +29,17 @@ const apiFetch = (path, options = {}) => {
     });
 };
 
-export const uploadStylesheets = async ({ stylesheets, url }) => {
+export const uploadStylesheets = async ({
+  stylesheets,
+  url,
+  visibility = "public"
+}) => {
   return apiFetch("/api/stylesheet_groups", {
     method: "POST",
     body: JSON.stringify({
       url,
-      stylesheets
+      stylesheets,
+      visibility
     })
   });
 };

@@ -15,7 +15,18 @@ module.exports = {
       customPath,
       path.join(__dirname, "../chrome/extension/create_styleurl")
     ],
-    inject: [customPath, path.join(__dirname, "../chrome/extension/inject")],
+    view_styleurl: [
+      customPath,
+      path.join(__dirname, "../chrome/extension/create_styleurl")
+    ],
+    inject_create_styleurl: [
+      customPath,
+      path.join(__dirname, "../chrome/extension/inject_create_styleurl")
+    ],
+    inject_view_styleurl: [
+      customPath,
+      path.join(__dirname, "../chrome/extension/inject_view_styleurl")
+    ],
     background: [
       customPath,
       path.join(__dirname, "../chrome/extension/background")
@@ -35,7 +46,8 @@ module.exports = {
     chunkFilename: "[id].chunk.js"
   },
   optimization: {
-    minimize: false
+    minimize: false,
+    nodeEnv: "production"
   },
   plugins: [
     new webpack.optimize.OccurrenceOrderPlugin(),

@@ -1,0 +1,12 @@
+.HeaderBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #13161B;
+    padding: 6px 28px;
+}
+
+.HeaderSide {
+    display: flex;
+    align-items: center;
+}

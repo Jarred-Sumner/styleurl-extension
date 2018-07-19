@@ -6,7 +6,7 @@ const PLUS_IMAGE_PATH = {
   "128": "img/plus_128x128.png"
 };
 
-const DEFAULT_ICON_PATH = {
+export const DEFAULT_ICON_PATH = {
   "16": "img/default_16x16.png",
   "19": "img/default_19x19.png",
   "38": "img/default_38x38.png",

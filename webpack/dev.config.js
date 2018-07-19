@@ -24,7 +24,18 @@ module.exports = {
       customPath,
       path.join(__dirname, "../chrome/extension/create_styleurl")
     ],
-    inject: [customPath, path.join(__dirname, "../chrome/extension/inject")],
+    view_styleurl: [
+      customPath,
+      path.join(__dirname, "../chrome/extension/create_styleurl")
+    ],
+    inject_create_styleurl: [
+      customPath,
+      path.join(__dirname, "../chrome/extension/inject_create_styleurl")
+    ],
+    inject_view_styleurl: [
+      customPath,
+      path.join(__dirname, "../chrome/extension/inject_view_styleurl")
+    ],
     background: [
       customPath,
       hotScript,
@@ -101,7 +112,16 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
-            plugins: ["@babel/plugin-proposal-class-properties", "lodash"],
+            plugins: [
+              "@babel/plugin-proposal-class-properties",
+              "lodash",
+              [
+                "module-resolver",
+                {
+                  root: [path.join(__dirname, "../chrome")]
+                }
+              ]
+            ],
             presets: [
               "@babel/preset-react",
               [

@@ -15,7 +15,6 @@ import {
 import { shouldApplyStyleToURL } from "./lib/stylefile";
 import Bluebird from "bluebird";
 import diffSheet from "stylesheet-differ";
-import { loadScript } from "./background/inject";
 import Messenger from "chrome-ext-messenger";
 import { toFile } from "./lib/toFile";
 import {
@@ -28,13 +27,25 @@ import {
   setBrowserActionToUploadStyle,
   setBrowserActionToStyleApplied,
   getBrowserActionState,
-  BROWSER_ACTION_STATES
+  BROWSER_ACTION_STATES,
+  DEFAULT_ICON_PATH
 } from "./lib/browserAction";
+import {
+  injectCreateStyleURLBar,
+  injectViewStyleURLBar
+} from "./background/inject";
+import {
+  StyleURLTab,
+  styleURLsForTabId,
+  stopMonitoringTabID,
+  startMonitoringTabID
+} from "./lib/StyleURLTab";
 
 global.Promise = Bluebird;
 
 let devtoolConnection;
 let gistConnection;
+let inlineHeaderConnection;
 const messenger = new Messenger();
 
 messenger.initBackgroundHub({
@@ -54,32 +65,7 @@ const log = (...messages) =>
 
 const TAB_IDS_TO_APPLY_STYLES = {};
 const TAB_ORIGINAL_STYLES = {};
-
-const startMonitoringTabID = (tabId, gistId) => {
-  if (!TAB_IDS_TO_APPLY_STYLES[tabId]) {
-    TAB_IDS_TO_APPLY_STYLES[tabId] = [];
-  }
-
-  if (!TAB_IDS_TO_APPLY_STYLES[tabId].includes(gistId)) {
-    TAB_IDS_TO_APPLY_STYLES[tabId].push(gistId);
-  }
-};
-
-const stopMonitoringTabID = (tabId, gistId) => {
-  if (
-    TAB_IDS_TO_APPLY_STYLES[tabId] &&
-    TAB_IDS_TO_APPLY_STYLES[tabId].includes(gistId)
-  ) {
-    TAB_IDS_TO_APPLY_STYLES[tabId].splice(
-      TAB_IDS_TO_APPLY_STYLES[tabId].indexOf(gistId),
-      1
-    );
-
-    if (TAB_IDS_TO_APPLY_STYLES[tabId].length === 0) {
-      delete TAB_IDS_TO_APPLY_STYLES[tabId];
-    }
-  }
-};
+const LAST_RECEIVED_TAB_ORIGINAL_STYLES = {};
 
 const getTab = tabId =>
   new Promise((resolve, reject) => {
@@ -130,6 +116,52 @@ const handleGistContentScriptMessages = async (
   }
 };
 
+const shouldAssumeChangesAreReal = tabId => {
+  return (
+    LAST_RECEIVED_TAB_ORIGINAL_STYLES[tabId] &&
+    new Date().getTime() - LAST_RECEIVED_TAB_ORIGINAL_STYLES[tabId] > 5000
+  );
+};
+
+const handleInlineHeaderMessages = async (
+  request,
+  from,
+  sender,
+  sendResponse
+) => {
+  const { type = null } = request;
+  const types = MESSAGE_TYPES;
+
+  if (!type) {
+    return;
+  }
+
+  if (!_.values(types).includes(type)) {
+    console.error("[background] request type must be one of", _.values(types));
+    return;
+  }
+
+  const tabId = getTabId(from);
+  const tab = await getTab(tabId);
+
+  if (type === types.log) {
+  } else if (type === types.create_style_url) {
+    createStyleURL(tab, request.value.visibility).then(response =>
+      sendResponse(response)
+    );
+  } else if (type === types.send_success_notification) {
+    chrome.notifications.create({
+      type: "basic",
+      iconUrl: chrome.extension.getURL(DEFAULT_ICON_PATH["128"]),
+      title: !request.value.didCopy
+        ? `Created styleurl`
+        : "Copied your styleurl to clipboard",
+      message:
+        "Your CSS changes have been exported to a styleurl successfully. Now you can share it!"
+    });
+  }
+};
+
 const handleDevtoolMessages = async (request, from, sender, sendResponse) => {
   const { type = null } = request;
   const types = MESSAGE_TYPES;
@@ -152,6 +184,7 @@ const handleDevtoolMessages = async (request, from, sender, sendResponse) => {
     log("Received content stylesheets", request.value);
     if (!TAB_ORIGINAL_STYLES[tabId]) {
       TAB_ORIGINAL_STYLES[tabId] = request.value;
+      LAST_RECEIVED_TAB_ORIGINAL_STYLES[tabId] = new Date().getTime();
     } else {
       const contentStyles = request.value;
       const existingSheets = TAB_ORIGINAL_STYLES[tabId];
@@ -161,21 +194,16 @@ const handleDevtoolMessages = async (request, from, sender, sendResponse) => {
           sheet => sheet.url === style.url
         );
         if (index === -1) {
-          TAB_ORIGINAL_STYLES[tabId][sUrl] = contentStyles[sUrl];
+          TAB_ORIGINAL_STYLES[tabId].push(style);
+          LAST_RECEIVED_TAB_ORIGINAL_STYLES[tabId] = new Date().getTime();
         }
       });
     }
-  } else if (type === types.style_diff_changed) {
-    if (request.value.stylesheets.length > 0) {
-      setBrowserActionToUploadStyle({
-        tabId: tabId,
-        styleCount: request.value.stylesheets.length
-      });
-      // chrome.browserAction.setPopup({ tabId: tabId, popup: "" });
-    } else {
-      setBrowserActionToDefault({ tabId: tabId });
-      // chrome.browserAction.setPopup({ tabId, popup: "popup.html" });
-    }
+  } else if (
+    type === types.style_diff_changed &&
+    shouldAssumeChangesAreReal(tabId)
+  ) {
+    injectCreateStyleURLBar(tabId);
   } else if (type === types.get_styles_diff) {
     log("Received styles!");
     if (!tab || !tab.url) {
@@ -197,21 +225,26 @@ const handleDevtoolMessages = async (request, from, sender, sendResponse) => {
     }
     return uploadStylesheets({
       stylesheets: modifiedSheets,
-      url: tab.url
+      url: tab.url,
+      visibility: request.value.visibility
     }).then(stylesheetResponse => {
+      sendResponse(stylesheetResponse);
+
       if (stylesheetResponse.success) {
         chrome.tabs.captureVisibleTab(null, { format: "png" }, async function(
           photo
         ) {
-          chrome.tabs.create({ url: stylesheetResponse.data.url });
-          // Capturing the photo fails sometimes shrug
-          if (photo) {
-            uploadScreenshot({
-              photo: await toFile(photo, SCREENSHOT_CONTENT_TYPE),
-              key: stylesheetResponse.data.id,
-              domain: stylesheetResponse.data.domain
-            });
-          }
+          window.setTimeout(async () => {
+            chrome.tabs.create({ url: stylesheetResponse.data.url });
+            // Capturing the photo fails sometimes shrug
+            if (photo) {
+              uploadScreenshot({
+                photo: await toFile(photo, SCREENSHOT_CONTENT_TYPE),
+                key: stylesheetResponse.data.id,
+                domain: stylesheetResponse.data.domain
+              });
+            }
+          }, 50);
         });
       } else {
         alert("Something didnt work quite right. Please try again!");
@@ -220,45 +253,34 @@ const handleDevtoolMessages = async (request, from, sender, sendResponse) => {
   }
 };
 
-const createStyleURL = tab => {
+const createStyleURL = (tab, visibility) => {
   return devtoolConnection.sendMessage(
     `devtool:${PORT_TYPES.devtool_widget}:${tab.id}`,
-    { type: MESSAGE_TYPES.get_styles_diff }
+    { type: MESSAGE_TYPES.get_styles_diff, value: { visibility } }
   );
 };
 
 chrome.browserAction.onClicked.addListener(tab => {
   console.log("Clicked Browser Action", getBrowserActionState());
   if (getBrowserActionState() === BROWSER_ACTION_STATES.default) {
+    injectCreateStyleURLBar(tab.id);
   } else if (getBrowserActionState() === BROWSER_ACTION_STATES.upload_style) {
-    createStyleURL(tab);
+    injectCreateStyleURLBar(tab.id);
   } else if (getBrowserActionState() === BROWSER_ACTION_STATES.style_applied) {
-    chrome.tabs.query(
-      {
-        active: true,
-        lastFocusedWindow: true
-      },
-      function(tabs) {
-        const tab = tabs[0];
-        if (!tab) {
-          return;
-        }
-        loadScript("inject", tab.id);
-      }
-    );
+    injectViewStyleURLBar(tab.id);
   }
 });
 
 chrome.webNavigation.onBeforeNavigate.addListener(
   async ({ tabId, url }) => {
-    const gistID = getGistIDFromURL(url);
+    const gistId = getGistIDFromURL(url);
 
-    if (!gistID) {
+    if (!gistId) {
       log("Gist ID not found");
       return;
     }
 
-    startMonitoringTabID(tabId, gistID);
+    await startMonitoringTabID({ tabId, gistId });
   },
   {
     url: Object.values(SPECIAL_QUERY_PARAMS).map(queryContains => ({
@@ -268,10 +290,6 @@ chrome.webNavigation.onBeforeNavigate.addListener(
 );
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (!TAB_IDS_TO_APPLY_STYLES[tabId]) {
-    return;
-  }
-
   if (!tab.url) {
     return;
   }
@@ -280,33 +298,34 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     return;
   }
 
-  Promise.all(
-    TAB_IDS_TO_APPLY_STYLES[tabId].map(async gistId => {
-      const gist = await getGistById(gistId);
-      const stylefile = loadStylefileFromGist(gist);
+  const styleURLs = styleURLsForTabId(tabId);
+  if (!styleURLs) {
+    return;
+  }
 
-      if (!stylefile) {
-        return false;
-      }
+  // Handle case where we haven't loaded the styleurl gist yet
+  const pendingStyleURLs = styleURLs.filter(({ loaded = false }) => !loaded);
+  if (pendingStyleURLs) {
+    await Promise.all(
+      pendingStyleURLs.map(styleurl => styleurl.load(styleurl.gistId))
+    );
+  }
 
-      if (!shouldApplyStyleToURL(stylefile, tab.url)) {
-        return false;
-      }
+  const appliedStyles = styleURLs.filter(styleURLTab =>
+    styleURLTab.applyToTab(tab)
+  );
 
-      applyStyleURLToTabID(gist, tabId);
-      return true;
-    })
-  )
-    .then(appliedStyles => appliedStyles.filter(_.identity))
-    .then(appliedStyles => {
-      const styleCount = appliedStyles.length;
-      if (styleCount > 0) {
-        setBrowserActionToStyleApplied({ tabId, styleCount });
-      } else {
-        // TODO: see if this is too aggro
-        setBrowserActionToDefault({ tabId });
-      }
-    });
+  if (styleURLs.find(({ isBarEnabled }) => isBarEnabled)) {
+    injectViewStyleURLBar(tabId);
+  }
+
+  const styleCount = appliedStyles.length;
+  if (styleCount > 0) {
+    setBrowserActionToStyleApplied({ tabId, styleCount });
+  } else {
+    // TODO: see if this is too aggro
+    setBrowserActionToDefault({ tabId });
+  }
 });
 
 chrome.tabs.onRemoved.addListener(tabId => {
@@ -323,4 +342,9 @@ devtoolConnection = messenger.initConnection(
 gistConnection = messenger.initConnection(
   PORT_TYPES.github_gist,
   handleGistContentScriptMessages
+);
+
+inlineHeaderConnection = messenger.initConnection(
+  PORT_TYPES.inline_header,
+  handleInlineHeaderMessages
 );

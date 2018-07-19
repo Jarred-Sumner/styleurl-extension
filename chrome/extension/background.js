@@ -159,6 +159,26 @@ const handleInlineHeaderMessages = async (
       message:
         "Your CSS changes have been exported to a styleurl successfully. Now you can share it!"
     });
+  } else if (type === types.get_styleurl) {
+    const styleURL = _.first(styleURLsForTabId(tabId));
+    sendResponse(styleURL);
+  } else if (type === types.update_styleurl_state) {
+    const styleURL = _.first(styleURLsForTabId(tabId));
+    const {
+      isBarEnabled = styleURL.isBarEnabled,
+      isStyleEnabled = styleURL.isStyleEnabled
+    } = request.value;
+
+    if (isBarEnabled !== styleURL.isBarEnabled) {
+      styleURL.isBarEnabled = isBarEnabled;
+    }
+
+    if (isStyleEnabled !== styleURL.isStyleEnabled) {
+      styleURL.isStyleEnabled = isStyleEnabled;
+      chrome.tabs.reload(tabId);
+    }
+
+    sendResponse(styleURL);
   }
 };
 
@@ -201,7 +221,8 @@ const handleDevtoolMessages = async (request, from, sender, sendResponse) => {
     }
   } else if (
     type === types.style_diff_changed &&
-    shouldAssumeChangesAreReal(tabId)
+    shouldAssumeChangesAreReal(tabId) &&
+    !styleURLsForTabId(tabId)
   ) {
     injectCreateStyleURLBar(tabId);
   } else if (type === types.get_styles_diff) {

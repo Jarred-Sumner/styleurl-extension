@@ -4,9 +4,15 @@
     justify-content: space-between;
     background-color: #13161B;
     padding: 6px 28px;
+    opacity: 1;
 }
 
 .HeaderSide {
     display: flex;
     align-items: center;
+}
+
+.HeaderBar--hidden {
+    opacity: 0;
+    pointer-events: none;
 }

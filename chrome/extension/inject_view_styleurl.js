@@ -1,10 +1,9 @@
 import { injectShadowDOM } from "./lib/injectShadowDom";
-import CreateStyleURL from "./create_styleurl/CreateStyleURL";
-import "./create_styleurl.css";
 import injectScriptNames from "./lib/injectScriptNames";
+import ViewStyleURLContainer from "./view_styleurl/ViewStyleURL";
 
 injectShadowDOM({
   id: injectScriptNames.view_styleurl,
-  Component: CreateStyleURL,
-  include: [chrome.extension.getURL("/create_styleurl.css")]
+  Component: ViewStyleURLContainer,
+  include: [chrome.extension.getURL("/inject_view_styleurl.css")]
 });

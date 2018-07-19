@@ -10,7 +10,7 @@ export class Dropdown extends React.Component {
   handleToggleOpen = () => {
     if (this.props.onClick) {
       this.props.onClick();
-    } else {
+    } else if (this.props.children) {
       this.setState({ isOpen: !this.state.isOpen });
     }
   };

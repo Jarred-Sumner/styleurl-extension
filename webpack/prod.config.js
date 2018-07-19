@@ -85,7 +85,16 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
-            plugins: ["@babel/plugin-proposal-class-properties", "lodash"],
+            plugins: [
+              "@babel/plugin-proposal-class-properties",
+              "lodash",
+              [
+                "module-resolver",
+                {
+                  root: [path.join(__dirname, "../chrome")]
+                }
+              ]
+            ],
             presets: [
               "@babel/preset-react",
               [

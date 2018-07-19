@@ -14,10 +14,17 @@
   "background": {
     "page": "background.html"
   },
+  "web_accessible_resources": [
+    "create_styleurl.html",
+    "inject.html",
+    "*.js",
+    "*.css",
+    "img/*.png"
+  ],
   "content_scripts": [
     {
       "matches": ["https://gist.github.com/*/*"],
-      "js": ["js/github_gist_content_script.bundle.js"],
+      "js": ["github_gist_content_script.bundle.js"],
       "run_at": "document_end"
     }
   ],

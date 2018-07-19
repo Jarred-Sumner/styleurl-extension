@@ -9,13 +9,20 @@ const TAB_IDS_TO_STYLEURL = {};
 
 const applyStylesheetToTabId = (stylesheet, tabId) => {
   const content = stylesheet[1];
-  console.log("Inserting Stylesheet", stylesheet, "into tab", tabId);
-  return chrome.tabs.insertCSS(tabId, {
-    cssOrigin: "user",
-    allFrames: true,
-    code: content,
-    runAt: "document_start"
-  });
+  return chrome.tabs.insertCSS(
+    tabId,
+    {
+      cssOrigin: "user",
+      allFrames: true,
+      code: content,
+      runAt: "document_start"
+    },
+    (...args) => {
+      console.log("Inserted Stylesheet into tab", tabId, {
+        stylesheet: content
+      });
+    }
+  );
 };
 
 export class StyleURL {

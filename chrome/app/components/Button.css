@@ -4,13 +4,17 @@
     border-radius: 4px;
     margin: 8px 0;
     cursor: pointer;
+    width: auto;
+}
+
+a.Button {
+    text-decoration: underline;
 }
 
 .Button-text {
     font-weight: 600;
     font-size: 14px;
     line-height: 18px;
-    color: inherit;
     user-select: none;
 }
 
@@ -18,9 +22,28 @@
     padding: 6px 14px;
 }
 
+a.Button--color-blue,
 .Button--color-blue {
     color: white;
     background-color: #5A95FF;
+}
+
+.Button--color-blue .Button-text {
+    color: white;
+}
+
+.Button--color-black,
+a.Button--color-black {
+    color: white;
+    background-color: #13161B;
+}
+
+.Button--color-black .Button-text {
+    color: white;
+}
+
+.Button--color-black:hover {
+    filter: invert(5%);
 }
 
 .Button--color-default {

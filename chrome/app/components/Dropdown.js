@@ -1,19 +1,48 @@
 import React from "react";
 import "./Dropdown.css";
 import classNames from "classnames";
+import onClickOutside from "react-onclickoutside";
 
-export class Dropdown extends React.Component {
+class _DropdownChild extends React.Component {
+  handleClickOutside = evt => this.props.hide(evt);
+  handleClick = evt => evt.stopPropagation();
+
+  render() {
+    const { children, ...otherProps } = this.props;
+
+    return (
+      <div onClick={this.handleClick} className="Dropdown-child">
+        {children}
+      </div>
+    );
+  }
+}
+
+const DropdownChild = onClickOutside(_DropdownChild, {
+  excludeScrollbar: true
+});
+
+class Dropdown extends React.Component {
   state = {
     isOpen: false
   };
 
-  handleToggleOpen = () => {
+  handleToggleOpen = evt => {
     if (this.props.onClick) {
       this.props.onClick();
     } else if (this.props.children) {
-      this.setState({ isOpen: !this.state.isOpen });
+      const isOpen = !this.state.isOpen;
+      this.setState({ isOpen });
     }
   };
+  // Do slight delay here as hack to account for previous button click
+  handleClickOutside = evt => {
+    if (this.state.isOpen) {
+      this.setState({ isOpen: false });
+    }
+  };
+
+  setDropdownRef = dropdownRef => (this.dropdownRef = dropdownRef);
 
   render() {
     const { icon, title, children } = this.props;
@@ -21,7 +50,8 @@ export class Dropdown extends React.Component {
 
     return (
       <div
-        className={classNames("Dropdown", {
+        ref={this.setDropdownRef}
+        className={classNames("Dropdown", "ignore-react-onclickoutside", {
           "Dropdown--open": !!this.state.isOpen,
           "Dropdown--closed": !this.state.isOpen
         })}
@@ -31,7 +61,11 @@ export class Dropdown extends React.Component {
           {title && <div className="Dropdown-title">{title}</div>}
         </div>
 
-        {isOpen ? children : null}
+        {isOpen ? (
+          <DropdownChild hide={this.handleClickOutside}>
+            {children}
+          </DropdownChild>
+        ) : null}
       </div>
     );
   }

@@ -80,6 +80,7 @@ module.exports = {
       __HOST__: `'${host}'`,
       __PORT__: port,
       __API_HOST__: "`http://localhost:3001`",
+      __FRONTEND_HOST__: "`http://localhost:3002`",
       "process.env": {
         NODE_ENV: JSON.stringify("development")
       }

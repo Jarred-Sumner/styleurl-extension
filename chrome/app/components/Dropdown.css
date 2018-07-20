@@ -11,7 +11,8 @@
 }
 
 .Dropdown-content:hover,
-.Dropdown--open .Dropdown-content {
+.Dropdown--open .Dropdown-content,
+.Dropdown-child {
     background-color: #21262F;
 }
 
@@ -19,8 +20,16 @@
     font-weight: 600;
     font-size: 16px;
     line-height: 22px;
+    user-select: none;
 }
 
 .Dropdown-icon {
     margin-right: 8px;
+}
+
+.Dropdown-child {
+    position: absolute;
+    bottom: 51px;
+    right: 0;
+    box-shadow: 1px -1px 1px #ccc;
 }

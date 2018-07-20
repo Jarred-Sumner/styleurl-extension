@@ -18,5 +18,10 @@ export default ({ src, srcSet, ...otherProps }) => (
     srcSet={getSrcSet()}
     height={28}
     width={76}
+    style={{
+      userSelect: "none",
+      MozUserSelect: "none",
+      WebkitUserSelect: "none"
+    }}
   />
 );

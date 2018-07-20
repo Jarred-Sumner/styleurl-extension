@@ -179,6 +179,13 @@ const handleInlineHeaderMessages = async (
     }
 
     sendResponse(styleURL);
+  } else if (type === types.shared_styleurl) {
+    chrome.notifications.create({
+      type: "basic",
+      iconUrl: chrome.extension.getURL(DEFAULT_ICON_PATH["128"]),
+      title: "Copied styleurl to clipboard",
+      message: "Share the styleurl by pasting it to a friend or colleague"
+    });
   }
 };
 
@@ -322,9 +329,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 
   const styleURLs = styleURLsForTabId(tabId);
-  if (!styleURLs) {
-    return;
-  }
 
   // Handle case where we haven't loaded the styleurl gist yet
   const pendingStyleURLs = styleURLs.filter(({ loaded = false }) => !loaded);

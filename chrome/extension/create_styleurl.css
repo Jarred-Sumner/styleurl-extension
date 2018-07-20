@@ -21,3 +21,12 @@ h1, h2, h3 {
     padding: 0;
     font-weight: 600;
 }
+
+.ShareTextInput {
+    padding: 14px;
+    color: white;
+    font-size: 12px;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    overflow: hidden;
+}

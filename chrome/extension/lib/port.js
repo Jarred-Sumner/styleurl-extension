@@ -28,7 +28,8 @@ export const MESSAGE_TYPES = {
   send_success_notification: "send_success_notification",
   toggle_styleurl_css: "toggle_styleurl_css",
   get_styleurl: "get_styleurl",
-  update_styleurl_state: "update_styleurl_state"
+  update_styleurl_state: "update_styleurl_state",
+  shared_styleurl: "shared_styleurl"
 };
 
 export const STYLESHEET_TYPE = {

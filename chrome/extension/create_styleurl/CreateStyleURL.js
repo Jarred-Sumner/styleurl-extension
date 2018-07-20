@@ -13,10 +13,6 @@ const buildEditURL = gistId => {
   return `${__API_HOST__}/api/gists/edit/${gistId}`;
 };
 
-const buildViewURL = gistId => {
-  return `https://gist.github.com/${gistId}`;
-};
-
 const copyToClipboard = text => {
   const input = document.createElement("input");
   document.body.appendChild(input);

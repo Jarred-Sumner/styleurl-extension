@@ -13,7 +13,7 @@ const applyStylesheetToTabId = (stylesheet, tabId) => {
     tabId,
     {
       cssOrigin: "user",
-      allFrames: true,
+      allFrames: false,
       code: content,
       runAt: "document_start"
     },

@@ -1,7 +1,7 @@
 import React from "react";
 import "./Icon.css";
 
-const ForkIcon = ({ width, height, ...otherProps }) => (
+const CodeIcon = ({ width, height, ...otherProps }) => (
   <svg {...otherProps} width={width} height={height} viewBox=" 0 0 32 20">
     <path
       d="M18.427.001c-.503.02-.933.359-1.059.833l-4.95 17.754c-.109.385.001.797.29 1.08.288.284.71.397 1.108.295.397-.1.708-.4.816-.785l4.95-17.755c.104-.345.03-.718-.2-1A1.157 1.157 0 0 0 18.428 0zM10.17 1.862a1.16 1.16 0 0 0-.595.243L.437 9.133c-.276.21-.437.532-.437.873 0 .34.161.662.437.872l9.138 7.028c.32.25.754.314 1.137.168.382-.146.655-.48.715-.875a1.1 1.1 0 0 0-.424-1.038l-8.008-6.15 8.008-6.16a1.09 1.09 0 0 0 .372-1.306 1.147 1.147 0 0 0-1.205-.683zm11.399 0a1.134 1.134 0 0 0-.982.806c-.126.439.037.907.41 1.183l8.008 6.16-8.008 6.15a1.1 1.1 0 0 0-.424 1.038c.06.395.333.729.715.875.383.146.816.082 1.137-.168l9.138-7.028c.276-.21.437-.532.437-.872 0-.34-.161-.663-.437-.873l-9.138-7.028c-.24-.19-.549-.278-.856-.243z"
@@ -11,7 +11,7 @@ const ForkIcon = ({ width, height, ...otherProps }) => (
   </svg>
 );
 
-const CodeIcon = ({ width, height, ...otherProps }) => (
+const ForkIcon = ({ width, height, ...otherProps }) => (
   <svg {...otherProps} width={width} height={height} viewBox="0 0 20 26">
     <g className="IconFill IconStroke" fillRule="nonzero">
       <path d="M3.832 6.84h1.032v9.307H3.832z" />

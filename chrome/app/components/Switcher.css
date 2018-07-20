@@ -33,4 +33,5 @@
     font-size: 14px;
     font-weight: 600px;
     line-height: 19px;
+    user-select: none;
 }

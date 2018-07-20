@@ -99,7 +99,7 @@ const getFileURL = filename => {
 const getGistFileContents = filename => {
   return connection
     .sendMessage(`background:${PORT_TYPES.github_gist}`, {
-      type: MESSAGE_TYPES.get_gist_content,
+      kind: MESSAGE_TYPES.get_gist_content,
       url: getFileURL(filename)
     })
     .then(({ value }) => {

@@ -8,7 +8,7 @@ let connection;
 
 const log = (...messages) => {
   connection.sendMessage(`background:${PORT_TYPES.devtool_widget}`, {
-    type: MESSAGE_TYPES.log,
+    kind: MESSAGE_TYPES.log,
     value: ["[DEVTOOLS]", ...messages]
   });
 };
@@ -128,23 +128,19 @@ const createConnection = () => {
 };
 
 const handleReceivedMessage = (request, from, sender, sendResponse) => {
-  if (request.type === MESSAGE_TYPES.get_current_styles_diff) {
-    return Promise.all([getInspectorStyles(), getGeneralStyles()])
-      .then(promises => {
-        return {
-          type: MESSAGE_TYPES.get_current_styles_diff,
-          response: true,
-          value: {
-            ...request.value,
-            stylesheets: promises[0],
-            general_stylesheets: promises[1]
-          }
-        };
-      })
-      .then(response => sendResponse(response), err => alert(err.message));
+  if (request.kind === MESSAGE_TYPES.get_current_styles_diff) {
+    Promise.all([getInspectorStyles(), getGeneralStyles()]).then(promises => {
+      sendResponse({
+        kind: MESSAGE_TYPES.get_current_styles_diff,
+        response: true,
+        value: {
+          ...request.value,
+          stylesheets: promises[0],
+          general_stylesheets: promises[1]
+        }
+      });
+    });
   }
-
-  return true;
 };
 
 const sendStyleDiffChangedEvent = el => {
@@ -155,7 +151,7 @@ const sendStyleDiffChangedEvent = el => {
       }
 
       connection.sendMessage(`background:${PORT_TYPES.devtool_widget}`, {
-        type: MESSAGE_TYPES.style_diff_changed,
+        kind: MESSAGE_TYPES.style_diff_changed,
         value: {
           stylesheets
         }
@@ -171,7 +167,7 @@ const sendContentStyles = () => {
     }
 
     connection.sendMessage(`background:${PORT_TYPES.devtool_widget}`, {
-      type: MESSAGE_TYPES.send_content_stylesheets,
+      kind: MESSAGE_TYPES.send_content_stylesheets,
       value: stylesheets
     });
   });

@@ -89,7 +89,7 @@ class CreateStyleURLContainer extends React.Component {
   handleToggleDiff = isOpen => {
     if (isOpen) {
       this._sendMessage({
-        type: MESSAGE_TYPES.get_current_styles_diff
+        kind: MESSAGE_TYPES.get_current_styles_diff
       }).then(({ stylesheets }) => {
         this.setState({
           stylesheets: stylesheets.map(({ content, url }) => [
@@ -108,27 +108,27 @@ class CreateStyleURLContainer extends React.Component {
     );
   };
 
-  handleExport = () => {
-    return this._sendMessage({
-      type: MESSAGE_TYPES.get_current_styles_diff
-    }).then(({ stylesheets }) =>
-      this._sendMessage({
-        type: MESSAGE_TYPES.upload_stylesheets,
-        value: {
-          stylesheets,
-          visibility: "private"
-        }
-      })
-    );
+  handleExport = async () => {
+    const { stylesheets } = await this._sendMessage({
+      kind: MESSAGE_TYPES.get_current_styles_diff
+    });
+
+    this._sendMessage({
+      kind: MESSAGE_TYPES.upload_stylesheets,
+      value: {
+        stylesheets,
+        visibility: "private"
+      }
+    });
   };
 
   handleShareChanges = () => {
     return this._sendMessage({
-      type: MESSAGE_TYPES.get_current_styles_diff
+      kind: MESSAGE_TYPES.get_current_styles_diff
     })
       .then(({ stylesheets }) =>
         this._sendMessage({
-          type: MESSAGE_TYPES.upload_stylesheets,
+          kind: MESSAGE_TYPES.upload_stylesheets,
           value: {
             stylesheets,
             visibility: "public"
@@ -145,7 +145,7 @@ class CreateStyleURLContainer extends React.Component {
           const didCopy = copyToClipboard(shareURL);
 
           return this._sendMessage({
-            type: MESSAGE_TYPES.send_success_notification,
+            kind: MESSAGE_TYPES.send_success_notification,
             value: {
               didCopy
             }

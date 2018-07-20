@@ -84,23 +84,23 @@ Raven.context(function() {
     sender,
     sendResponse
   ) => {
-    const { type = null } = request;
+    const { kind = null } = request;
 
-    const types = MESSAGE_TYPES;
+    const kinds = MESSAGE_TYPES;
 
-    if (!type) {
+    if (!kind) {
       return;
     }
 
-    if (!_.values(types).includes(type)) {
+    if (!_.values(kinds).includes(kind)) {
       console.error(
-        "[background] request type must be one of",
-        _.values(types)
+        "[background] request kind must be one of",
+        _.values(kinds)
       );
       return;
     }
 
-    if (type === types.get_gist_content) {
+    if (kind === kinds.get_gist_content) {
       if (!request.url) {
         console.error("[background] invalid get_gist_content: missing url");
         sendResponse({ success: false });
@@ -130,23 +130,34 @@ Raven.context(function() {
     );
   };
 
+  const autodetectStyleURL = async ({ url, tabId }) => {
+    const gistId = getGistIDFromURL(url);
+
+    if (!gistId) {
+      log("Gist ID not found");
+      return;
+    }
+
+    await startMonitoringTabID({ tabId, gistId });
+  };
+
   const handleInlineHeaderMessages = async (
     request,
     from,
     sender,
     sendResponse
   ) => {
-    const { type = null } = request;
-    const types = MESSAGE_TYPES;
+    const { kind = null } = request;
+    const kinds = MESSAGE_TYPES;
 
-    if (!type) {
+    if (!kind) {
       return;
     }
 
-    if (!_.values(types).includes(type)) {
+    if (!_.values(kinds).includes(kind)) {
       console.error(
-        "[background] request type must be one of",
-        _.values(types)
+        "[background] request kind must be one of",
+        _.values(kinds)
       );
       return;
     }
@@ -154,12 +165,12 @@ Raven.context(function() {
     const tabId = getTabId(from);
     const tab = await getTab(tabId);
 
-    if (type === types.log) {
-    } else if (type === types.get_current_styles_diff) {
+    if (kind === kinds.log) {
+    } else if (kind === kinds.get_current_styles_diff) {
       getCurrentStylesheetsDiff(tabId).then(response => sendResponse(response));
-    } else if (type === types.send_success_notification) {
+    } else if (kind === kinds.send_success_notification) {
       chrome.notifications.create({
-        type: "basic",
+        kind: "basic",
         iconUrl: chrome.extension.getURL(DEFAULT_ICON_PATH["128"]),
         title: !request.value.didCopy
           ? `Created styleurl`
@@ -167,10 +178,10 @@ Raven.context(function() {
         message:
           "Your CSS changes have been exported to a styleurl successfully. Now you can share it!"
       });
-    } else if (type === types.get_styleurl) {
+    } else if (kind === kinds.get_styleurl) {
       const styleURL = _.first(styleURLsForTabId(tabId));
       sendResponse(styleURL);
-    } else if (type === types.update_styleurl_state) {
+    } else if (kind === kinds.update_styleurl_state) {
       const styleURL = _.first(styleURLsForTabId(tabId));
       const {
         isBarEnabled = styleURL.isBarEnabled,
@@ -187,14 +198,14 @@ Raven.context(function() {
       }
 
       sendResponse(styleURL);
-    } else if (type === types.shared_styleurl) {
+    } else if (kind === kinds.shared_styleurl) {
       chrome.notifications.create({
         type: "basic",
         iconUrl: chrome.extension.getURL(DEFAULT_ICON_PATH["128"]),
         title: "Copied styleurl to clipboard",
         message: "Share the styleurl by pasting it to a friend or colleague"
       });
-    } else if (type === types.upload_stylesheets) {
+    } else if (kind === kinds.upload_stylesheets) {
       uploadStylesheets({
         stylesheets: request.value.stylesheets,
         url: tab.url,
@@ -207,7 +218,9 @@ Raven.context(function() {
             photo
           ) {
             window.setTimeout(async () => {
-              chrome.tabs.create({ url: stylesheetResponse.data.url });
+              chrome.tabs.create({ url: stylesheetResponse.data.url }, tab => {
+                autodetectStyleURL({ tabId: tab.id, url: tab.url });
+              });
               // Capturing the photo fails sometimes shrug
               if (photo) {
                 uploadScreenshot({
@@ -226,17 +239,17 @@ Raven.context(function() {
   };
 
   const handleDevtoolMessages = async (request, from, sender, sendResponse) => {
-    const { type = null } = request;
-    const types = MESSAGE_TYPES;
+    const { kind = null } = request;
+    const kinds = MESSAGE_TYPES;
 
-    if (!type) {
+    if (!kind) {
       return;
     }
 
-    if (!_.values(types).includes(type)) {
+    if (!_.values(kinds).includes(kind)) {
       console.error(
-        "[background] request type must be one of",
-        _.values(types)
+        "[background] request kind must be one of",
+        _.values(kinds)
       );
       return;
     }
@@ -244,9 +257,9 @@ Raven.context(function() {
     const tabId = getTabId(from);
     const tab = await getTab(tabId);
 
-    if (type === types.log) {
+    if (kind === kinds.log) {
       console.log.apply(console, request.value);
-    } else if (type === types.send_content_stylesheets) {
+    } else if (kind === kinds.send_content_stylesheets) {
       log("Received content stylesheets", request.value);
       if (!TAB_ORIGINAL_STYLES[tabId]) {
         TAB_ORIGINAL_STYLES[tabId] = request.value;
@@ -267,7 +280,7 @@ Raven.context(function() {
         });
       }
     } else if (
-      type === types.style_diff_changed &&
+      kind === kinds.style_diff_changed &&
       shouldAssumeChangesAreReal(tabId) &&
       !styleURLsForTabId(tabId)
     ) {
@@ -278,7 +291,7 @@ Raven.context(function() {
   const getCurrentStylesheetsDiff = tabId => {
     return devtoolConnection
       .sendMessage(`devtool:${PORT_TYPES.devtool_widget}:${tabId}`, {
-        type: MESSAGE_TYPES.get_current_styles_diff
+        kind: MESSAGE_TYPES.get_current_styles_diff
       })
       .then(
         response => {
@@ -293,8 +306,8 @@ Raven.context(function() {
               );
               if (newStyle.content) {
                 const diffedStyle = diffSheet(
-                  oldStyle.content,
-                  newStyle.content
+                  oldStyle.content || "",
+                  newStyle.content || ""
                 );
                 if (diffedStyle && diffedStyle.trim().length > 0) {
                   modifiedSheets.push({
@@ -333,15 +346,8 @@ Raven.context(function() {
   });
 
   chrome.webNavigation.onBeforeNavigate.addListener(
-    async ({ tabId, url }) => {
-      const gistId = getGistIDFromURL(url);
-
-      if (!gistId) {
-        log("Gist ID not found");
-        return;
-      }
-
-      await startMonitoringTabID({ tabId, gistId });
+    ({ tabId, url }) => {
+      autodetectStyleURL({ tabId, url });
     },
     {
       url: Object.values(SPECIAL_QUERY_PARAMS).map(queryContains => ({

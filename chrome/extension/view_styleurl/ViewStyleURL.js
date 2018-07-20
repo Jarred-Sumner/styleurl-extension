@@ -87,11 +87,11 @@ class ViewStyleURLContainer extends React.Component {
       isStyleEnabled: styleurl.isStyleEnabled
     });
 
-  _sendMessage = (type, message) => {
+  _sendMessage = (kind, message) => {
     return this._connection.sendMessage(
       `background:${PORT_TYPES.inline_header}`,
       {
-        type,
+        kind,
         value: message
       }
     );
@@ -116,9 +116,9 @@ class ViewStyleURLContainer extends React.Component {
   };
 
   handleMessage = (request, from, sender, sendResponse) => {
-    const { type, value } = request;
+    const { kind, value } = request;
 
-    if (type === MESSAGE_TYPES.get_styleurl) {
+    if (kind === MESSAGE_TYPES.get_styleurl) {
       this.updateStyleURL(value);
     }
   };

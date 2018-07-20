@@ -1,6 +1,15 @@
 import React from "react";
 import "./Icon.css";
 
+const ExportIcon = ({ width, height, ...otherProps }) => (
+  <svg width={width} height={height} viewBox="0 0 37 36">
+    <g className="IconFill" fillRule="evenodd">
+      <path d="M25.542 13.014v4h6.96v14.899H4.003v-14.9h6.96v-4H.003v22.9h36.499v-22.9z" />
+      <path d="M16.252 7.834v19.41h4V7.568l2.694 2.694 2.828-2.828-7.388-7.39L10.73 7.7l2.828 2.828z" />
+    </g>
+  </svg>
+);
+
 const CodeIcon = ({ width, height, ...otherProps }) => (
   <svg {...otherProps} width={width} height={height} viewBox=" 0 0 32 20">
     <path
@@ -34,7 +43,8 @@ const ShareIcon = ({ width, height, ...otherProps }) => (
 const ICON_BY_NAME = {
   fork: ForkIcon,
   code: CodeIcon,
-  share: ShareIcon
+  share: ShareIcon,
+  export: ExportIcon
 };
 
 export const Icon = ({ width, height, color, name, ...otherProps }) => {

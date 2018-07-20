@@ -13,7 +13,7 @@ const log = (...messages) => {
   });
 };
 
-const isResourceStyle = resource => resource.type === "stylesheet";
+const isResourceStyle = resource => resource && resource.type === "stylesheet";
 
 const isInspectorStyle = resource => {
   const isStylesheet =
@@ -128,23 +128,20 @@ const createConnection = () => {
 };
 
 const handleReceivedMessage = (request, from, sender, sendResponse) => {
-  if (request.type === MESSAGE_TYPES.get_styles_diff) {
+  if (request.type === MESSAGE_TYPES.get_current_styles_diff) {
     return Promise.all([getInspectorStyles(), getGeneralStyles()])
       .then(promises => {
-        return connection.sendMessage(
-          `background:${PORT_TYPES.devtool_widget}`,
-          {
-            type: MESSAGE_TYPES.get_styles_diff,
-            response: true,
-            value: {
-              ...request.value,
-              stylesheets: promises[0],
-              general_stylesheets: promises[1]
-            }
+        return {
+          type: MESSAGE_TYPES.get_current_styles_diff,
+          response: true,
+          value: {
+            ...request.value,
+            stylesheets: promises[0],
+            general_stylesheets: promises[1]
           }
-        );
+        };
       })
-      .then(response => sendResponse(response));
+      .then(response => sendResponse(response), err => alert(err.message));
   }
 
   return true;
@@ -196,7 +193,6 @@ chrome.devtools.network.onNavigated.addListener(function() {
   }
 });
 
-chrome.runtime.onMessage.addListener(handleReceivedMessage);
 chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(
   sendStyleDiffChangedEvent
 );

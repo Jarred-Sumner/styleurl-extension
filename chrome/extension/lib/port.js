@@ -29,7 +29,8 @@ export const MESSAGE_TYPES = {
   toggle_styleurl_css: "toggle_styleurl_css",
   get_styleurl: "get_styleurl",
   update_styleurl_state: "update_styleurl_state",
-  shared_styleurl: "shared_styleurl"
+  shared_styleurl: "shared_styleurl",
+  get_current_styles_diff: "get_current_styles_diff"
 };
 
 export const STYLESHEET_TYPE = {

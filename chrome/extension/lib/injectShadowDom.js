@@ -27,9 +27,10 @@ export const injectShadowDOM = ({
 
   ReactDOM.render(
     <ShadowDOM include={include}>
-      <div className="StyleURLShadowDOMRoot ignore-react-onclickoutside">
-        <base href={`chrome-extension://${chrome.runtime.id}`} />
-        <Component />
+      <div className="ignore-react-onclickoutside">
+        <div className="StyleURLShadowDOMRoot">
+          <Component />
+        </div>
       </div>
     </ShadowDOM>,
     shadowContainer

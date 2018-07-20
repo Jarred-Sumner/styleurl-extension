@@ -48,11 +48,13 @@ export class StylesheetCodePreview extends React.PureComponent {
             {this.state.code}
           </SyntaxHighlighter>
         </div>
-        <div className="StylesheetCodePreview-Actions">
-          <Button color={BUTTON_COLORS.black} href={buildViewURL(gistId)}>
-            Open gist
-          </Button>
-        </div>
+        {gistId && (
+          <div className="StylesheetCodePreview-Actions">
+            <Button color={BUTTON_COLORS.black} href={buildViewURL(gistId)}>
+              Open gist
+            </Button>
+          </div>
+        )}
       </div>
     );
   }

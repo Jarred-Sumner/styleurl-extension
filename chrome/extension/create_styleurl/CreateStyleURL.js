@@ -1,11 +1,14 @@
 import React from "react";
 import Messenger from "chrome-ext-messenger";
-
+import _ from "lodash";
 import { INITIAL_WIDTH } from "./messages";
 import { HeaderBar } from "app/components/HeaderBar";
 import { PORT_TYPES, MESSAGE_TYPES } from "../lib/port";
 import { Button } from "app/components/Button";
 import { BUTTON_COLORS } from "../../app/components/Button";
+import Dropdown from "../../app/components/Dropdown";
+import { Icon } from "../../app/components/Icon";
+import { StylesheetCodePreview } from "../../app/components/StylesheetCodePreview";
 
 const messenger = new Messenger();
 
@@ -31,29 +34,40 @@ const copyToClipboard = text => {
   return result !== "unsuccessful";
 };
 
-const EXAMPLE_STYLEFILE = {
-  version: 1,
-  name: "Jarred's github.com changes",
-  domains: ["github.com"],
-  url_patterns: ["github.com/*"],
-  timestamp: "2018-07-15T03:24:29Z",
-  id: "vHxq",
-  redirect_url: "https://github.com/Jarred-Sumner/styleurl-extension",
-  shared_via:
-    "StyleURL – import and export CSS changes from Chrome Inspector to a Gist\nyou can share (like this one!)"
-};
+class CreateStyleURL extends React.PureComponent {
+  render() {
+    const { onToggleDiff, onExport, onShareChanges, stylesheets } = this.props;
+    return (
+      <HeaderBar>
+        <Dropdown
+          onToggle={onToggleDiff}
+          icon={<Icon width={"32"} height="20" name="code" />}
+          title="Diff"
+        >
+          <StylesheetCodePreview stylesheets={stylesheets} />
+        </Dropdown>
+        <Dropdown
+          onClick={onExport}
+          icon={<Icon height="20" name="export" />}
+          title="Export changes"
+        />
+        <Dropdown
+          onClick={onShareChanges}
+          icon={<Icon width={"24"} height="21" name="share" />}
+          title="Share changes"
+        />
+      </HeaderBar>
+    );
+  }
+}
 
-class PopupRoot extends React.Component {
-  static defaultProps = {
-    stylefile: EXAMPLE_STYLEFILE,
-    gistId: "4197f93e0fc62d7cf235d41eef5a7fa3"
-  };
-
+class CreateStyleURLContainer extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      width: INITIAL_WIDTH
+      width: INITIAL_WIDTH,
+      stylesheets: []
     };
 
     this._connection = messenger.initConnection(
@@ -72,8 +86,19 @@ class PopupRoot extends React.Component {
     }
   }
 
-  handleChange = () => {
-    console.log("change");
+  handleToggleDiff = isOpen => {
+    if (isOpen) {
+      this._sendMessage({
+        type: MESSAGE_TYPES.get_current_styles_diff
+      }).then(({ stylesheets }) => {
+        this.setState({
+          stylesheets: stylesheets.map(({ content, url }) => [
+            _.last(url.split("/")),
+            content
+          ])
+        });
+      });
+    }
   };
 
   _sendMessage = message => {
@@ -84,50 +109,61 @@ class PopupRoot extends React.Component {
   };
 
   handleExport = () => {
-    this._sendMessage({
-      type: MESSAGE_TYPES.create_style_url,
-      value: {
-        visibility: "private"
-      }
-    });
+    return this._sendMessage({
+      type: MESSAGE_TYPES.get_current_styles_diff
+    }).then(({ stylesheets }) =>
+      this._sendMessage({
+        type: MESSAGE_TYPES.upload_stylesheets,
+        value: {
+          stylesheets,
+          visibility: "private"
+        }
+      })
+    );
   };
 
   handleShareChanges = () => {
     return this._sendMessage({
-      type: MESSAGE_TYPES.create_style_url,
-      value: {
-        visibility: "public"
-      }
-    }).then(response => {
-      if (
-        response &&
-        response.success &&
-        response.data.visibility === "publicly_visible"
-      ) {
-        const shareURL = response.data.share_url;
-        const didCopy = copyToClipboard(shareURL);
-
-        return this._sendMessage({
-          type: MESSAGE_TYPES.send_success_notification,
+      type: MESSAGE_TYPES.get_current_styles_diff
+    })
+      .then(({ stylesheets }) =>
+        this._sendMessage({
+          type: MESSAGE_TYPES.upload_stylesheets,
           value: {
-            didCopy
+            stylesheets,
+            visibility: "public"
           }
-        });
-      }
-    });
+        })
+      )
+      .then(response => {
+        if (
+          response &&
+          response.success &&
+          response.data.visibility === "publicly_visible"
+        ) {
+          const shareURL = response.data.share_url;
+          const didCopy = copyToClipboard(shareURL);
+
+          return this._sendMessage({
+            type: MESSAGE_TYPES.send_success_notification,
+            value: {
+              didCopy
+            }
+          });
+        }
+      });
   };
 
   render() {
-    const { stylefile, gistId } = this.props;
     return (
-      <HeaderBar>
-        <Button onClick={this.handleExport}>Export changes</Button>
-        <Button onClick={this.handleShareChanges} color={BUTTON_COLORS.blue}>
-          Share changes
-        </Button>
-      </HeaderBar>
+      <CreateStyleURL
+        onExport={this.handleExport}
+        onShareChanges={this.handleShareChanges}
+        stylesheets={this.state.stylesheets}
+        onToggleDiff={this.handleToggleDiff}
+      />
     );
   }
 }
 
-export default PopupRoot;
+export default CreateStyleURLContainer;

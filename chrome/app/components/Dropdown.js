@@ -33,6 +33,9 @@ class Dropdown extends React.Component {
     } else if (this.props.children) {
       const isOpen = !this.state.isOpen;
       this.setState({ isOpen });
+      if (this.props.onToggle) {
+        this.props.onToggle(isOpen);
+      }
     }
   };
   // Do slight delay here as hack to account for previous button click

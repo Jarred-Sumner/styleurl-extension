@@ -51,6 +51,8 @@ module.exports = {
     chunkFilename: "[id].chunk.js"
   },
   optimization: {
+    // I thought it was Chrome Store that disallows minification...but turns out it's Firefox.
+    // https://developer.mozilla.org/en-US/Add-ons/AMO/Policy/Reviews#Source_Code_Submission
     minimizer: [
       new UglifyJSPlugin({
         sourceMap: true,

@@ -2,6 +2,7 @@ const path = require("path");
 const webpack = require("webpack");
 const autoprefixer = require("autoprefixer");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const UglifyJSPlugin = require("uglifyjs-webpack-plugin");
 
 const customPath = path.join(__dirname, "./customPublicPath");
 
@@ -50,7 +51,25 @@ module.exports = {
     chunkFilename: "[id].chunk.js"
   },
   optimization: {
-    minimize: false,
+    minimizer: [
+      new UglifyJSPlugin({
+        sourceMap: true,
+        uglifyOptions: {
+          ecma: 8,
+          compress: {
+            ecma: 8
+          },
+          mangle: false,
+          keep_classnames: true,
+          keep_fnames: true,
+          output: {
+            ascii_only: true,
+            beautify: true,
+            ecma: 8
+          }
+        }
+      })
+    ],
     nodeEnv: "production"
   },
   plugins: [

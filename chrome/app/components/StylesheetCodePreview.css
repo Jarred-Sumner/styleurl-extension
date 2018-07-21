@@ -4,19 +4,6 @@
     overflow: hidden;
 }
 
-.CodeContainer {
-    width: 320px;
-    max-width: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
-    max-height: 240px;
-}
-
-.CodeContainer pre {
-    margin: 0;
-    padding: 14px 14px !important;
-}
-
 .StylesheetCodePreview-Actions {
     text-align: center;
     display: flex;
@@ -30,16 +17,4 @@
     padding-top: 10px;
     padding-bottom: 10px;
     color: white !important;
-}
-
-.CodeContainer pre code:nth-child(1) {
-    padding-right: 14px !important;
-}
-
-.react-syntax-highlighter-line-number {
-    user-select: none;
-}
-
-.CodeContainer > pre {
-    background: #21262F !important;
 }

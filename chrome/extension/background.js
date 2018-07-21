@@ -184,7 +184,7 @@ Raven.context(function() {
       getCurrentStylesheetsDiff(tabId).then(response => sendResponse(response));
     } else if (kind === kinds.send_success_notification) {
       chrome.notifications.create({
-        kind: "basic",
+        type: "basic",
         iconUrl: chrome.extension.getURL(DEFAULT_ICON_PATH["128"]),
         title: !request.value.didCopy
           ? `Created styleurl`
@@ -236,7 +236,11 @@ Raven.context(function() {
           ) {
             window.setTimeout(async () => {
               chrome.tabs.create({ url: stylesheetResponse.data.url }, tab => {
-                autodetectStyleURL({ tabId: tab.tabId, url: tab.url });
+                const gistId = getGistIDFromURL(tab.url);
+
+                if (gistId) {
+                  injectViewStyleURLBar(tab.tabId);
+                }
               });
               // Capturing the photo fails sometimes shrug
               if (photo) {
@@ -396,8 +400,8 @@ Raven.context(function() {
   };
 
   chrome.webNavigation.onCommitted.addListener(autoInsertCSS);
-  chrome.webNavigation.onHistoryStateUpdated.addListener(({ tabId }) =>
-    sendStyleURLsToTab({ tabId })
+  chrome.webNavigation.onHistoryStateUpdated.addListener(({ tabId, url }) =>
+    autodetectStyleURL({ url, tabId })
   );
 
   chrome.webNavigation.onReferenceFragmentUpdated.addListener(({ tabId }) =>

@@ -9,6 +9,8 @@ import { BUTTON_COLORS } from "../../app/components/Button";
 import Dropdown from "../../app/components/Dropdown";
 import { Icon } from "../../app/components/Icon";
 import { StylesheetCodePreview } from "../../app/components/StylesheetCodePreview";
+import CodeDiff, { concatStylesheets } from "../../app/components/CodeDiff";
+import filenameify from "filenamify";
 
 const messenger = new Messenger();
 
@@ -35,6 +37,40 @@ const copyToClipboard = text => {
 };
 
 class CreateStyleURL extends React.PureComponent {
+  state = {
+    stylesheets: [],
+    downloadURL: null
+  };
+
+  static getDerivedStateFromProps(props, state) {
+    if (props.stylesheets !== state.stylesheets) {
+      if (props.stylesheets) {
+        const blob = new Blob([concatStylesheets(props.stylesheets, true)], {
+          type: "text/plain;charset=UTF-8"
+        });
+
+        return {
+          stylesheets: props.stylesheets,
+          downloadURL: window.URL.createObjectURL(blob)
+        };
+      } else {
+        if (state.downloadURL) {
+          URL.revokeObjectURL(state.downloadURL);
+        }
+
+        return { stylesheets: [], downloadURL: null };
+      }
+    }
+  }
+
+  getFilename = () => {
+    // The plus here is just here so the VSCode syntax highlighter doesnt get messed up
+    // Weird VSCode bug :shrug:
+    return filenameify(`${location.pathname.substr(1)}.diff` + ".css", {
+      replacement: "_"
+    });
+  };
+
   render() {
     const { onToggleDiff, onExport, onShareChanges, stylesheets } = this.props;
     return (
@@ -42,15 +78,25 @@ class CreateStyleURL extends React.PureComponent {
         <Dropdown
           onToggle={onToggleDiff}
           icon={<Icon width={"32"} height="20" name="code" />}
-          title="Diff"
+          title="View changes"
         >
-          <StylesheetCodePreview stylesheets={stylesheets} />
+          <div className="ViewChanges">
+            <CodeDiff stylesheets={stylesheets} />
+            <div className="ViewChanges-actions">
+              <a
+                href={this.state.downloadURL}
+                download={this.getFilename()}
+                className="ViewChanges-action"
+              >
+                <div className="ViewChanges-action-text">Download</div>
+              </a>
+              <div className="ViewChanges-separator" />
+              <div onClick={onExport} className="ViewChanges-action">
+                <div className="ViewChanges-action-text">Create Gist</div>
+              </div>
+            </div>
+          </div>
         </Dropdown>
-        <Dropdown
-          onClick={onExport}
-          icon={<Icon height="20" name="export" />}
-          title="Export changes"
-        />
         <Dropdown
           onClick={onShareChanges}
           icon={<Icon width={"24"} height="21" name="share" />}
@@ -113,6 +159,11 @@ class CreateStyleURLContainer extends React.Component {
       kind: MESSAGE_TYPES.get_current_styles_diff
     });
 
+    if (!stylesheets || !stylesheets.length) {
+      alert("Please make some CSS changes and try again");
+      return;
+    }
+
     this._sendMessage({
       kind: MESSAGE_TYPES.upload_stylesheets,
       value: {
@@ -125,17 +176,19 @@ class CreateStyleURLContainer extends React.Component {
   handleShareChanges = () => {
     return this._sendMessage({
       kind: MESSAGE_TYPES.get_current_styles_diff
-    })
-      .then(({ stylesheets }) =>
-        this._sendMessage({
-          kind: MESSAGE_TYPES.upload_stylesheets,
-          value: {
-            stylesheets,
-            visibility: "public"
-          }
-        })
-      )
-      .then(response => {
+    }).then(({ stylesheets }) => {
+      if (!stylesheets || !stylesheets.length) {
+        alert("Please make some CSS changes and try again");
+        return;
+      }
+
+      this._sendMessage({
+        kind: MESSAGE_TYPES.upload_stylesheets,
+        value: {
+          stylesheets,
+          visibility: "public"
+        }
+      }).then(response => {
         if (
           response &&
           response.success &&
@@ -152,6 +205,7 @@ class CreateStyleURLContainer extends React.Component {
           });
         }
       });
+    });
   };
 
   render() {

@@ -30,3 +30,41 @@ h1, h2, h3 {
     border-top-right-radius: 2px;
     overflow: hidden;
 }
+
+.ViewChanges-actions {
+    display: flex;
+    border-top: 1px solid #13161B;
+}
+
+.ViewChanges-separator {
+    height: 31px;
+    width: 1px;
+    display: block;
+    flex-shrink: 0;
+    flex-grow: 0;
+    content: "";
+}
+
+.ViewChanges-action {
+    display: flex;
+    align-items: center;
+    flex: 0.5;
+    color: white;
+    justify-content: center;
+    padding: 6px 8px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.ViewChanges-action-icon {
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-right: 8px;
+}
+
+.ViewChanges-action:hover,
+.ViewChanges-separator {
+    background-color: #13161B;
+}

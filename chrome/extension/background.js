@@ -31,7 +31,8 @@ import {
 } from "./lib/browserAction";
 import {
   injectCreateStyleURLBar,
-  injectViewStyleURLBar
+  injectViewStyleURLBar,
+  injectCSSManager
 } from "./background/inject";
 import {
   StyleURLTab,
@@ -48,6 +49,7 @@ Raven.config(
 Raven.context(function() {
   let devtoolConnection;
   let gistConnection;
+  let stylesheetManagerConnection;
   let inlineHeaderConnection;
   const messenger = new Messenger();
 
@@ -130,6 +132,15 @@ Raven.context(function() {
     );
   };
 
+  const sendStyleURLsToTab = ({ tabId }) => {
+    styleURLsForTabId(tabId).forEach(styleurl => {
+      stylesheetManagerConnection.sendMessage(
+        `content_script:${PORT_TYPES.stylesheet_manager}:${tabId}`,
+        { kind: MESSAGE_TYPES.get_styleurl, value: styleurl.toJSON() }
+      );
+    });
+  };
+
   const autodetectStyleURL = async ({ url, tabId }) => {
     const gistId = getGistIDFromURL(url);
 
@@ -139,6 +150,9 @@ Raven.context(function() {
     }
 
     await startMonitoringTabID({ tabId, gistId });
+    sendStyleURLsToTab({ tabId });
+
+    injectCSSManager(tabId);
   };
 
   const handleInlineHeaderMessages = async (
@@ -180,13 +194,10 @@ Raven.context(function() {
       });
     } else if (kind === kinds.get_styleurl) {
       const styleURL = _.first(styleURLsForTabId(tabId));
-      sendResponse(styleURL);
+      sendResponse({ value: styleURL, kind });
     } else if (kind === kinds.update_styleurl_state) {
       const styleURL = _.first(styleURLsForTabId(tabId));
-      const {
-        isBarEnabled = styleURL.isBarEnabled,
-        isStyleEnabled = styleURL.isStyleEnabled
-      } = request.value;
+      const { isBarEnabled, isStyleEnabled } = request.value;
 
       if (isBarEnabled !== styleURL.isBarEnabled) {
         styleURL.isBarEnabled = isBarEnabled;
@@ -194,10 +205,16 @@ Raven.context(function() {
 
       if (isStyleEnabled !== styleURL.isStyleEnabled) {
         styleURL.isStyleEnabled = isStyleEnabled;
-        chrome.tabs.reload(tabId);
       }
 
-      sendResponse(styleURL);
+      inlineHeaderConnection.sendMessage(
+        `content_script:${PORT_TYPES.inline_header}:${tabId}`,
+        { value: styleURL, kind: kinds.update_styleurl_state }
+      );
+
+      if (!from.includes(PORT_TYPES.stylesheet_manager)) {
+        sendStyleURLsToTab({ tabId });
+      }
     } else if (kind === kinds.shared_styleurl) {
       chrome.notifications.create({
         type: "basic",
@@ -219,7 +236,7 @@ Raven.context(function() {
           ) {
             window.setTimeout(async () => {
               chrome.tabs.create({ url: stylesheetResponse.data.url }, tab => {
-                autodetectStyleURL({ tabId: tab.id, url: tab.url });
+                autodetectStyleURL({ tabId: tab.tabId, url: tab.url });
               });
               // Capturing the photo fails sometimes shrug
               if (photo) {
@@ -268,7 +285,6 @@ Raven.context(function() {
         const contentStyles = request.value;
         const existingSheets = TAB_ORIGINAL_STYLES[tabId];
         contentStyles.forEach(style => {
-          ƒ;
           const index = _.findIndex(
             existingSheets,
             sheet => sheet.url === style.url
@@ -304,17 +320,16 @@ Raven.context(function() {
               const newStyle = currentStyles.find(
                 style => style.url === oldStyle.url
               );
-              if (newStyle.content) {
-                const diffedStyle = diffSheet(
-                  oldStyle.content || "",
-                  newStyle.content || ""
-                );
-                if (diffedStyle && diffedStyle.trim().length > 0) {
-                  modifiedSheets.push({
-                    url: oldStyle.url,
-                    content: diffedStyle
-                  });
-                }
+              const diffedStyle = diffSheet(
+                oldStyle ? oldStyle.content || "" : "",
+                newStyle ? newStyle.content || "" : ""
+              );
+
+              if (diffedStyle && diffedStyle.trim().length > 0) {
+                modifiedSheets.push({
+                  url: oldStyle.url,
+                  content: diffedStyle
+                });
               }
             });
           }
@@ -335,13 +350,13 @@ Raven.context(function() {
   chrome.browserAction.onClicked.addListener(tab => {
     console.log("Clicked Browser Action", getBrowserActionState());
     if (getBrowserActionState() === BROWSER_ACTION_STATES.default) {
-      injectCreateStyleURLBar(tab.id);
+      injectCreateStyleURLBar(tab.tabId);
     } else if (getBrowserActionState() === BROWSER_ACTION_STATES.upload_style) {
-      injectCreateStyleURLBar(tab.id);
+      injectCreateStyleURLBar(tab.tabId);
     } else if (
       getBrowserActionState() === BROWSER_ACTION_STATES.style_applied
     ) {
-      injectViewStyleURLBar(tab.id);
+      injectViewStyleURLBar(tab.tabId);
     }
   });
 
@@ -354,6 +369,39 @@ Raven.context(function() {
         queryContains
       }))
     }
+  );
+
+  const autoInsertCSS = async tab => {
+    const styleURLs = styleURLsForTabId(tab.tabId);
+
+    // Handle case where we haven't loaded the styleurl gist yet
+    const pendingStyleURLs = styleURLs.filter(({ loaded = false }) => !loaded);
+    if (pendingStyleURLs) {
+      await Promise.all(
+        pendingStyleURLs.map(styleurl => styleurl.load(styleurl.gistId))
+      );
+    }
+
+    const appliedStyles = styleURLs.filter(styleURLTab =>
+      styleURLTab.applyToTab(tab, stylesheetManagerConnection)
+    );
+
+    const styleCount = appliedStyles.length;
+    if (styleCount > 0) {
+      setBrowserActionToStyleApplied({ tabId: tab.tabId, styleCount });
+    } else {
+      // TODO: see if this is too aggro
+      setBrowserActionToDefault({ tabId: tab.tabId });
+    }
+  };
+
+  chrome.webNavigation.onCommitted.addListener(autoInsertCSS);
+  chrome.webNavigation.onHistoryStateUpdated.addListener(({ tabId }) =>
+    sendStyleURLsToTab({ tabId })
+  );
+
+  chrome.webNavigation.onReferenceFragmentUpdated.addListener(({ tabId }) =>
+    sendStyleURLsToTab({ tabId })
   );
 
   chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
@@ -375,20 +423,8 @@ Raven.context(function() {
       );
     }
 
-    const appliedStyles = styleURLs.filter(styleURLTab =>
-      styleURLTab.applyToTab(tab)
-    );
-
     if (styleURLs.find(({ isBarEnabled }) => isBarEnabled)) {
       injectViewStyleURLBar(tabId);
-    }
-
-    const styleCount = appliedStyles.length;
-    if (styleCount > 0) {
-      setBrowserActionToStyleApplied({ tabId, styleCount });
-    } else {
-      // TODO: see if this is too aggro
-      setBrowserActionToDefault({ tabId });
     }
   });
 
@@ -410,6 +446,11 @@ Raven.context(function() {
 
   inlineHeaderConnection = messenger.initConnection(
     PORT_TYPES.inline_header,
+    handleInlineHeaderMessages
+  );
+
+  stylesheetManagerConnection = messenger.initConnection(
+    PORT_TYPES.stylesheet_manager,
     handleInlineHeaderMessages
   );
 });

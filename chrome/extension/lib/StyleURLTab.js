@@ -4,18 +4,20 @@ import {
   getStylesheetsFromGist
 } from "./gists";
 import { shouldApplyStyleToURL } from "./stylefile";
+import { injectCSSManager } from "../background/inject";
+import { MESSAGE_TYPES, PORT_TYPES } from "./port";
 
 const TAB_IDS_TO_STYLEURL = {};
 
 const applyStylesheetToTabId = (stylesheet, tabId) => {
   const content = stylesheet[1];
-  return chrome.tabs.insertCSS(
+  chrome.tabs.insertCSS(
     tabId,
     {
       cssOrigin: "user",
-      allFrames: false,
       code: content,
-      runAt: "document_start"
+      allFrames: true,
+      runAt: "document_end"
     },
     (...args) => {
       console.log("Inserted Stylesheet into tab", tabId, {
@@ -60,24 +62,27 @@ export class StyleURL {
     this.loaded = true;
   };
 
-  applyToTab = tab => {
+  applyToTab = (tab, connection) => {
     if (!this.canApplyStyle(tab.url)) {
       return this.setAppliedToURL(tab.url, false);
     }
 
-    this.stylesheets.forEach(stylesheet =>
-      applyStylesheetToTabId(stylesheet, tab.id)
-    );
+    injectCSSManager(tab.tabId);
+    if (connection) {
+      connection.sendMessage(
+        `content_script:${PORT_TYPES.stylesheet_manager}:${tab.tabId}`,
+        {
+          kind: MESSAGE_TYPES.get_styleurl,
+          value: this.toJSON()
+        }
+      );
+    }
 
     return this.setAppliedToURL(tab.url, true);
   };
 
   canApplyStyle = url => {
-    return (
-      !!this.stylefile &&
-      this.isStyleEnabled &&
-      shouldApplyStyleToURL(this.stylefile, url)
-    );
+    return !!this.stylefile && shouldApplyStyleToURL(this.stylefile, url);
   };
 }
 
@@ -93,10 +98,14 @@ export const startMonitoringTabID = async ({ tabId, gistId }) => {
   const existingStyleURLTab = TAB_IDS_TO_STYLEURL[tabId].find(
     tab => tab.gistId === gistId
   );
-  if (!existingStyleURLTab) {
+  if (existingStyleURLTab) {
+    return existingStyleURLTab;
+  } else {
     const styleUrlTab = new StyleURL({ gistId });
     TAB_IDS_TO_STYLEURL[tabId].push(styleUrlTab);
     await styleUrlTab.load(gistId);
+
+    return styleUrlTab;
   }
 };
 

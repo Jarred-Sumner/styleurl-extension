@@ -77,7 +77,9 @@ class ViewStyleURLContainer extends React.Component {
   }
 
   componentDidMount() {
-    this._sendMessage(MESSAGE_TYPES.get_styleurl).then(this.updateStyleURL);
+    this._sendMessage(MESSAGE_TYPES.get_styleurl).then(({ value }) =>
+      this.updateStyleURL(value)
+    );
   }
 
   updateStyleURL = styleurl =>
@@ -118,7 +120,10 @@ class ViewStyleURLContainer extends React.Component {
   handleMessage = (request, from, sender, sendResponse) => {
     const { kind, value } = request;
 
-    if (kind === MESSAGE_TYPES.get_styleurl) {
+    if (
+      kind === MESSAGE_TYPES.get_styleurl ||
+      kind === MESSAGE_TYPES.update_styleurl_state
+    ) {
       this.updateStyleURL(value);
     }
   };

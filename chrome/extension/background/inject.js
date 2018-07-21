@@ -10,25 +10,27 @@ function isInjected(tabId, name) {
       tabId,
       {
         code: `!!document.querySelector("#${scriptName}")`,
-        runAt: "document_idle"
+        runAt: "document_end"
       },
       results => resolve(results[0])
     );
   });
 }
 
-export async function loadScript(name, tabId, cb) {
-  const didInject = await isInjected(tabId, name);
-  if (didInject) {
-    log("SKIP injecting script", name, "into", tabId);
-    return;
+export async function loadScript(name, tabId, cb, runAt = "document_end") {
+  if (runAt !== "document_start") {
+    const didInject = await isInjected(tabId, name);
+    if (didInject) {
+      log("SKIP injecting script", name, "into", tabId);
+      return;
+    }
   }
 
   log("Injecting script", name, "into", tabId);
 
   chrome.tabs.executeScript(
     tabId,
-    { file: `/${name}.bundle.js`, runAt: "document_end", allFrames: false },
+    { file: `/${name}.bundle.js`, runAt, allFrames: false },
     cb
   );
 }
@@ -39,4 +41,8 @@ export const injectCreateStyleURLBar = (tabId, cb) => {
 
 export const injectViewStyleURLBar = (tabId, cb) => {
   loadScript("inject_view_styleurl", tabId, cb);
+};
+
+export const injectCSSManager = (tabId, cb) => {
+  loadScript("css_manager_content_script", tabId, cb, "document_start");
 };

@@ -14,7 +14,8 @@ export const tabIdFromPortName = _portName => {
 export const PORT_TYPES = {
   github_gist: "github_gist",
   inline_header: "inline_header",
-  devtool_widget: "devtool_widget"
+  devtool_widget: "devtool_widget",
+  stylesheet_manager: "stylesheet_manager"
 };
 
 export const MESSAGE_TYPES = {

@@ -18,8 +18,11 @@ module.exports = {
     dns: "empty",
     net: "empty"
   },
-
   entry: {
+    css_manager_content_script: [
+      customPath,
+      path.join(__dirname, "../chrome/extension/css_manager_content_script")
+    ],
     create_styleurl: [
       customPath,
       path.join(__dirname, "../chrome/extension/create_styleurl")

@@ -25,6 +25,13 @@ export class InlineStyleObserverManager {
     );
   };
 
+  _sendDevtoolMessage = message => {
+    return this._connection.sendMessage(
+      `background:${PORT_TYPES.devtool_widget}`,
+      message
+    );
+  };
+
   handleMessage = async (request, from, sender, sendResponse) => {
     const { kind } = request;
 

@@ -348,6 +348,8 @@ Raven.context(function() {
           }
         });
       }
+    } else if (kind === kinds.open_style_editor) {
+      injectCreateStyleURLBar(tabId);
     } else if (
       kind === kinds.style_diff_changed &&
       shouldAssumeChangesAreReal(tabId) &&

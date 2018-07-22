@@ -123,7 +123,11 @@ class CreateStyleURLContainer extends React.Component {
   }
 
   handleMessage = async (request, from, sender, sendResponse) => {
-    console.log("MESSAGE", request);
+    const kinds = MESSAGE_TYPES;
+    const { kind = null } = request;
+    if (kind === kinds.style_diff_changed) {
+      this.syncStylesheets();
+    }
   };
 
   componentWillUnmount() {
@@ -132,18 +136,22 @@ class CreateStyleURLContainer extends React.Component {
     }
   }
 
+  syncStylesheets = () => {
+    this._sendMessage({
+      kind: MESSAGE_TYPES.get_current_styles_diff
+    }).then(({ stylesheets }) => {
+      this.setState({
+        stylesheets: stylesheets.map(({ content, url }) => [
+          _.last(url.split("/")),
+          content
+        ])
+      });
+    });
+  };
+
   handleToggleDiff = isOpen => {
     if (isOpen) {
-      this._sendMessage({
-        kind: MESSAGE_TYPES.get_current_styles_diff
-      }).then(({ stylesheets }) => {
-        this.setState({
-          stylesheets: stylesheets.map(({ content, url }) => [
-            _.last(url.split("/")),
-            content
-          ])
-        });
-      });
+      this.syncStylesheets();
     }
   };
 

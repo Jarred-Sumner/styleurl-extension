@@ -84,6 +84,7 @@
     "filenamify": "^2.1.0",
     "js-yaml": "^3.12.0",
     "lodash": "^4.17.10",
+    "optimal-select": "^4.0.1",
     "postcss-cssnext": "^3.1.0",
     "postcss-import": "^11.1.0",
     "raven-js": "^3.26.3",

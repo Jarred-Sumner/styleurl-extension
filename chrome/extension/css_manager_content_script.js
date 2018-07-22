@@ -524,7 +524,7 @@ import { PORT_TYPES, MESSAGE_TYPES } from "./lib/port";
       if (!prevExpected) {
         return;
       }
-      for (const el of styleElements.values()) {
+      for (let el of styleElements.values()) {
         if (!isMovable(el)) {
           continue;
         }
@@ -555,7 +555,7 @@ import { PORT_TYPES, MESSAGE_TYPES } from "./lib/port";
       }
     }
     function isMovable(el) {
-      return el.parentNode || !disabledElements.has(getStyleId(el));
+      return !!(el.parentNode || !disabledElements.has(getStyleId(el)));
     }
     function isSkippable(el, skipOwnStyles) {
       return (

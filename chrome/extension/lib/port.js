@@ -15,7 +15,8 @@ export const PORT_TYPES = {
   github_gist: "github_gist",
   inline_header: "inline_header",
   devtool_widget: "devtool_widget",
-  stylesheet_manager: "stylesheet_manager"
+  stylesheet_manager: "stylesheet_manager",
+  inline_style_observer: "inline_style_observer"
 };
 
 export const MESSAGE_TYPES = {
@@ -32,7 +33,10 @@ export const MESSAGE_TYPES = {
   update_styleurl_state: "update_styleurl_state",
   shared_styleurl: "shared_styleurl",
   get_current_styles_diff: "get_current_styles_diff",
-  upload_stylesheets: "upload_stylesheets"
+  upload_stylesheets: "upload_stylesheets",
+  start_observing_inline_styles: "start_observing_inline_styles",
+  stop_observing_inline_styles: "start_observing_inline_styles",
+  geT_inline_style_diff: "get_all_inline_styles"
 };
 
 export const STYLESHEET_TYPE = {

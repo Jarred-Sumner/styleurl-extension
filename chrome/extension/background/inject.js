@@ -46,3 +46,7 @@ export const injectViewStyleURLBar = (tabId, cb) => {
 export const injectCSSManager = (tabId, cb) => {
   loadScript("css_manager_content_script", tabId, cb, "document_start");
 };
+
+export const injectInlineStyleObserver = (tabId, cb) => {
+  loadScript("inline_style_observer", tabId, cb, "document_start");
+};

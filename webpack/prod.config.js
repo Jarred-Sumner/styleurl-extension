@@ -12,6 +12,10 @@ module.exports = {
     net: "empty"
   },
   entry: {
+    inline_style_observer: [
+      customPath,
+      path.join(__dirname, "../chrome/extension/inline_style_observer")
+    ],
     css_manager_content_script: [
       customPath,
       path.join(__dirname, "../chrome/extension/css_manager_content_script")

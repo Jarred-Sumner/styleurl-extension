@@ -32,7 +32,8 @@ import {
 import {
   injectCreateStyleURLBar,
   injectViewStyleURLBar,
-  injectCSSManager
+  injectCSSManager,
+  injectInlineStyleObserver
 } from "./background/inject";
 import {
   StyleURLTab,
@@ -50,17 +51,38 @@ Raven.context(function() {
   let devtoolConnection;
   let gistConnection;
   let stylesheetManagerConnection;
+  let inlineStyleObserverConnection;
   let inlineHeaderConnection;
   const messenger = new Messenger();
 
   messenger.initBackgroundHub({
-    connectedHandler: function(extensionPart, connectionName, tabId) {},
+    connectedHandler: function(extensionPart, connectionName, tabId) {
+      if (extensionPart === "devtool" && tabId) {
+        injectInlineStyleObserver(tabId, () => {
+          inlineStyleObserverConnection.sendMessage(
+            `content_script:${PORT_TYPES.inline_style_observer}:${tabId}`,
+            {
+              kind: MESSAGE_TYPES.start_observing_inline_styles
+            }
+          );
+        });
+      }
+    },
     disconnectedHandler: function(extensionPart, connectionName, tabId) {
       if (
         extensionPart === "devtool" &&
         getBrowserActionState() === BROWSER_ACTION_STATES.upload_style
       ) {
         setBrowserActionToDefault({ tabId });
+      }
+
+      if (extensionPart === "devtool" && tabId) {
+        inlineStyleObserverConnection.sendMessage(
+          `content_script:${PORT_TYPES.inline_style_observer}:${tabId}`,
+          {
+            kind: MESSAGE_TYPES.stop_observing_inline_styles
+          }
+        );
       }
     }
   });
@@ -153,6 +175,33 @@ Raven.context(function() {
     sendStyleURLsToTab({ tabId });
 
     injectCSSManager(tabId);
+  };
+
+  const handleInlineStyleObserverMessages = async (
+    request,
+    from,
+    sender,
+    sendResponse
+  ) => {
+    const { kind = null } = request;
+    const kinds = MESSAGE_TYPES;
+
+    if (!kind) {
+      return;
+    }
+
+    if (!_.values(kinds).includes(kind)) {
+      console.error(
+        "[background] request kind must be one of",
+        _.values(kinds)
+      );
+      return;
+    }
+
+    const tabId = getTabId(from);
+    const tab = await getTab(tabId);
+
+    log(request.value);
   };
 
   const handleInlineHeaderMessages = async (
@@ -308,13 +357,42 @@ Raven.context(function() {
     }
   };
 
+  const getInlineStylesDiff = tabId => {
+    return inlineStyleObserverConnection
+      .sendMessage(
+        `content_script:${PORT_TYPES.inline_style_observer}:${tabId}`,
+        {
+          kind: MESSAGE_TYPES.get_inline_style_diff
+        }
+      )
+      .then(response => {
+        log("Received inline styles!");
+
+        const { old_stylesheet, new_stylesheet } = response.value;
+
+        if (!new_stylesheet || !new_stylesheet.content) {
+          return null;
+        }
+
+        const WARNING_COMMENT = `/* These changes are from inline styles, so the selectors might be a litttle crazy and if the page does lots of inline styles, unrelated changes could show up here. */`;
+
+        return {
+          url: old_stylesheet.url,
+          content: `${WARNING_COMMENT}\n${diffSheet(
+            old_stylesheet.content,
+            new_stylesheet.content
+          )}`
+        };
+      });
+  };
+
   const getCurrentStylesheetsDiff = tabId => {
     return devtoolConnection
       .sendMessage(`devtool:${PORT_TYPES.devtool_widget}:${tabId}`, {
         kind: MESSAGE_TYPES.get_current_styles_diff
       })
       .then(
-        response => {
+        async response => {
           log("Received styles!");
           let modifiedSheets = response.value.stylesheets.slice();
           const currentStyles = response.value.general_stylesheets;
@@ -339,6 +417,12 @@ Raven.context(function() {
           }
 
           TAB_IDS_STYLESHEET_DIFFS[tabId] = modifiedSheets;
+
+          const fauxInlineStylesheet = await getInlineStylesDiff(tabId);
+
+          if (fauxInlineStylesheet) {
+            modifiedSheets.push(fauxInlineStylesheet);
+          }
 
           return {
             stylesheets: modifiedSheets
@@ -456,5 +540,10 @@ Raven.context(function() {
   stylesheetManagerConnection = messenger.initConnection(
     PORT_TYPES.stylesheet_manager,
     handleInlineHeaderMessages
+  );
+
+  inlineStyleObserverConnection = messenger.initConnection(
+    PORT_TYPES.inline_style_observer,
+    handleInlineStyleObserverMessages
   );
 });

@@ -200,3 +200,9 @@ chrome.devtools.inspectedWindow.onResourceAdded.addListener(
 // chrome.devtools.inspectedWindow.onResourceAdded.addListener(sendContentStyles);
 // above causes inf loop, not sure why
 setupConnection();
+
+chrome.devtools.panels.elements.onSelectionChanged.addListener(() => {
+  chrome.devtools.inspectedWindow.eval("window.__styleurlSetSelected($0)", {
+    useContentScriptContext: true
+  });
+});

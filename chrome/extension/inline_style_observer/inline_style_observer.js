@@ -9,33 +9,43 @@ export class InlineStyleObserver {
     this.onChange = onChange;
   }
 
-  start() {
+  setSelectedElement = element => {
+    const wasObserving = this.observing;
+    if (wasObserving) {
+      this.stop();
+    }
+
+    this.selectedElement = element;
+
+    this.start();
+  };
+
+  start = () => {
     if (!this._observer) {
       this._observer = new MutationObserver(this.handleMutation);
     }
 
-    if (this.observing) {
+    if (this.observing || !this.selectedElement) {
       return;
     }
 
-    this._observer.observe(document, {
+    this._observer.observe(this.selectedElement, {
       attributes: true,
-      childList: true,
       attributeOldValue: true,
-      subtree: true,
       attributeFilter: ["style"]
     });
 
     this.observing = true;
-  }
+  };
 
-  stop() {
+  stop = () => {
     if (!this.observing || !this._observer) {
       return;
     }
 
     this._observer.disconnect();
-  }
+    this.observing = false;
+  };
 
   handleMutation = mutations => {
     mutations.forEach(mutation => {

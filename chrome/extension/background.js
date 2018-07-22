@@ -57,15 +57,12 @@ Raven.context(function() {
 
   messenger.initBackgroundHub({
     connectedHandler: function(extensionPart, connectionName, tabId) {
-      if (extensionPart === "devtool" && tabId) {
-        injectInlineStyleObserver(tabId, () => {
-          inlineStyleObserverConnection.sendMessage(
-            `content_script:${PORT_TYPES.inline_style_observer}:${tabId}`,
-            {
-              kind: MESSAGE_TYPES.start_observing_inline_styles
-            }
-          );
-        });
+      if (
+        extensionPart === "devtool" &&
+        tabId &&
+        !styleURLsForTabId(tabId).length
+      ) {
+        injectInlineStyleObserver(tabId);
       }
     },
     disconnectedHandler: function(extensionPart, connectionName, tabId) {
@@ -76,7 +73,11 @@ Raven.context(function() {
         setBrowserActionToDefault({ tabId });
       }
 
-      if (extensionPart === "devtool" && tabId) {
+      if (
+        extensionPart === "devtool" &&
+        tabId &&
+        !styleURLsForTabId(tabId).length
+      ) {
         inlineStyleObserverConnection.sendMessage(
           `content_script:${PORT_TYPES.inline_style_observer}:${tabId}`,
           {

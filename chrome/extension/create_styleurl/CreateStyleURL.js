@@ -81,11 +81,15 @@ class CreateStyleURL extends React.PureComponent {
       onShareChanges,
       stylesheets,
       shareURL,
-      setShareLinkRef
+      setShareLinkRef,
+      hidden,
+      onHide
     } = this.props;
 
     return (
       <HeaderBar
+        hidden={hidden}
+        onHide={onHide}
         center={
           <input
             value={shareURL}
@@ -136,6 +140,7 @@ class CreateStyleURLContainer extends React.Component {
     this.state = {
       width: INITIAL_WIDTH,
       shareURL: "",
+      hidden: false,
       stylesheets: []
     };
 
@@ -259,11 +264,19 @@ class CreateStyleURLContainer extends React.Component {
     });
   };
 
+  handlehide = () => {
+    this.setState({
+      hidden: true
+    });
+  };
+
   render() {
     return (
       <CreateStyleURL
+        hidden={this.state.hidden}
         onExport={this.handleExport}
         onShareChanges={this.handleShareChanges}
+        onHide={this.handleHide}
         stylesheets={this.state.stylesheets}
         onToggleDiff={this.handleToggleDiff}
         setShareLinkRef={this.setShareLinkRef}

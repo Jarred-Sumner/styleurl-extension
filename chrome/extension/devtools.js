@@ -228,7 +228,6 @@ chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(
     });
   }
 );
-// above causes inf loop, not sure why
 setupConnection();
 
 chrome.devtools.panels.elements.onSelectionChanged.addListener(() => {

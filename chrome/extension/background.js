@@ -56,15 +56,6 @@ Raven.context(function() {
   const messenger = new Messenger();
 
   messenger.initBackgroundHub({
-    connectedHandler: function(extensionPart, connectionName, tabId) {
-      if (
-        extensionPart === "devtool" &&
-        tabId &&
-        !styleURLsForTabId(tabId).length
-      ) {
-        injectInlineStyleObserver(tabId);
-      }
-    },
     disconnectedHandler: function(extensionPart, connectionName, tabId) {
       if (
         extensionPart === "devtool" &&

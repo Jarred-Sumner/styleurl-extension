@@ -81,8 +81,9 @@ h3 {
     border: 0;
     outline: 0;
     padding: 6px 8px;
-    width: 200px;
+    width: 300px;
     display: none;
+    text-align: center;
 }
 
 .ShareLink--shown {

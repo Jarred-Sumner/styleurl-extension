@@ -14,7 +14,7 @@ export const injectShadowDOM = ({
   shadowContainer.style.position = "fixed";
   shadowContainer.style.left = 0;
   shadowContainer.style.right = 0;
-  shadowContainer.style.zIndex = 9999999;
+  shadowContainer.style.zIndex = 2147483647; // https://stackoverflow.com/questions/491052/minimum-and-maximum-value-of-z-index
   shadowContainer.style.boxSizing = "border-box";
 
   if (position === "bottom") {

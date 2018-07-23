@@ -176,15 +176,22 @@ const sendContentStyles = () => {
   });
 };
 
+const sendSelectedElementToContentScript = () => {
+  chrome.devtools.inspectedWindow.eval(
+    ` window.__styleurlSelectedElement = $0;
+      window.__styleurlSetSelected && window.__styleurlSetSelected($0);`,
+    {
+      useContentScriptContext: true
+    }
+  );
+};
+
 const setupConnection = () => {
   connection = createConnection();
 
   sendContentStyles();
   sendStyleDiffChangedEvent();
-
-  chrome.devtools.inspectedWindow.eval("window.__styleurlSetSelected($0)", {
-    useContentScriptContext: true
-  });
+  sendSelectedElementToContentScript();
 };
 
 chrome.devtools.network.onNavigated.addListener(function() {
@@ -231,7 +238,5 @@ chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(
 setupConnection();
 
 chrome.devtools.panels.elements.onSelectionChanged.addListener(() => {
-  chrome.devtools.inspectedWindow.eval("window.__styleurlSetSelected($0)", {
-    useContentScriptContext: true
-  });
+  sendSelectedElementToContentScript();
 });

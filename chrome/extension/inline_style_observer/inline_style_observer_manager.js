@@ -17,6 +17,10 @@ export class InlineStyleObserverManager {
     this.newStylesheet = null;
     this._observer = new InlineStyleObserver(this.handleChange);
 
+    if (window.__styleurlSelectedElement) {
+      this._observer.setSelectedElement(window.__styleurlSelectedElement);
+    }
+
     window.__styleurlSetSelected = this._observer.setSelectedElement;
   }
 

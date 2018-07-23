@@ -83,6 +83,7 @@ class CreateStyleURL extends React.PureComponent {
       shareURL,
       setShareLinkRef
     } = this.props;
+
     return (
       <HeaderBar
         center={
@@ -201,6 +202,10 @@ class CreateStyleURLContainer extends React.Component {
       value: {
         stylesheets,
         visibility: "private"
+      }
+    }).then(response => {
+      if (response && response.data && response.data.url) {
+        window.open(response.data.url, "_blank");
       }
     });
   };

@@ -22,7 +22,7 @@ export async function loadScript(name, tabId, cb, runAt = "document_end") {
     const didInject = await isInjected(tabId, name);
     if (didInject) {
       log("SKIP injecting script", name, "into", tabId);
-      cb(false);
+      cb && cb(false);
       return;
     }
   }

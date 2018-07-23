@@ -26,6 +26,11 @@
       "matches": ["https://gist.github.com/*/*"],
       "js": ["github_gist_content_script.bundle.js"],
       "run_at": "document_end"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["inline_style_observer.bundle.js"],
+      "run_at": "document_start"
     }
   ],
   "permissions": [

@@ -175,8 +175,13 @@ const sendContentStyles = () => {
 
 const setupConnection = () => {
   connection = createConnection();
+
   sendContentStyles();
   sendStyleDiffChangedEvent();
+
+  chrome.devtools.inspectedWindow.eval("window.__styleurlSetSelected($0)", {
+    useContentScriptContext: true
+  });
 };
 
 chrome.devtools.network.onNavigated.addListener(function() {

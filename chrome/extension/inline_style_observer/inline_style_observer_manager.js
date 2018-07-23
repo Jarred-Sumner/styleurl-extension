@@ -88,5 +88,11 @@ export class InlineStyleObserverManager {
 
     this.oldStylesheet = oldStylesheet;
     this.newStylesheet = newStylesheet;
+
+    if (newStylesheet.content) {
+      this._sendMessage({
+        kind: MESSAGE_TYPES.style_diff_changed
+      });
+    }
   };
 }

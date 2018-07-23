@@ -201,6 +201,23 @@ Raven.context(function() {
     const tabId = getTabId(from);
     const tab = await getTab(tabId);
 
+    if (
+      kind === MESSAGE_TYPES.style_diff_changed &&
+      !styleURLsForTabId(tabId).length
+    ) {
+      injectCreateStyleURLBar(tabId, success => {
+        if (!success) {
+          return;
+        }
+
+        inlineHeaderConnection.sendMessage(
+          `content_script:${PORT_TYPES.inline_header}:${tabId}`,
+          {
+            kind: MESSAGE_TYPES.open_style_editor
+          }
+        );
+      });
+    }
     log(request.value);
   };
 

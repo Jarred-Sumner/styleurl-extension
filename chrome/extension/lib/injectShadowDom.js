@@ -31,8 +31,9 @@ export const injectShadowDOM = ({
   document.body.appendChild(shadowContainer);
 
   ReactDOM.render(
-    <ShadowDOM include={include}>
+    <ShadowDOM>
       <div className="ignore-react-onclickoutside">
+        <link rel="stylesheet" href={include} type="text/css" />
         <div className="StyleURLShadowDOMRoot">
           <Component />
         </div>

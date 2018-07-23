@@ -87,7 +87,7 @@ module.exports = {
     new webpack.IgnorePlugin(/[^/]+\/[\S]+.dev$/),
     new webpack.DefinePlugin({
       __API_HOST__: "`https://api.styleurl.app`",
-      __FRONTEND_HOST__: "`https://styleurl:app`",
+      __FRONTEND_HOST__: "`https://www.styleurl.app`",
       "process.env": {
         NODE_ENV: JSON.stringify("production")
       }

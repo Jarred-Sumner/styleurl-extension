@@ -31,6 +31,8 @@
     margin-right: 14px;
     color: gray;
     cursor: pointer;
+    margin-top: auto;
+    margin-bottom: auto;
 }
 
 .HeaderBar-hideButton:hover {

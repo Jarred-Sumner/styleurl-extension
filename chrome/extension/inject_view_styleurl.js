@@ -5,5 +5,5 @@ import ViewStyleURLContainer from "./view_styleurl/ViewStyleURL";
 injectShadowDOM({
   id: injectScriptNames.inject_view_styleurl,
   Component: ViewStyleURLContainer,
-  include: [chrome.extension.getURL("/inject_view_styleurl.css")]
+  include: chrome.extension.getURL("/inject_view_styleurl.css")
 });

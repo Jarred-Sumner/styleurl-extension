@@ -10,7 +10,7 @@ function isInjected(tabId, name) {
       tabId,
       {
         code: `!!document.querySelector("#${scriptName}")`,
-        runAt: "document_end"
+        runAt: "document_start"
       },
       results => resolve(results[0])
     );

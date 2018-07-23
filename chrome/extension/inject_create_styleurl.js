@@ -4,7 +4,7 @@ import "./create_styleurl.css";
 import injectScriptNames from "./lib/injectScriptNames";
 
 injectShadowDOM({
-  id: injectScriptNames.create_styleurl,
+  id: injectScriptNames.inject_create_styleurl,
   Component: CreateStyleURL,
   include: [chrome.extension.getURL("/inject_create_styleurl.css")]
 });

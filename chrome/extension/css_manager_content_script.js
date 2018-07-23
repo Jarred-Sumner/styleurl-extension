@@ -9,7 +9,6 @@ import { makeAllRulesImportant } from "./lib/makeEverythingImportant";
     // some weird bug in new Chrome: the content script gets injected multiple times
     return;
   }
-  console.time("[CSSManager] Apply Style");
   console.log("[CSSManager] INJECT START");
   const messenger = new Messenger();
   const connection = messenger.initConnection(
@@ -139,7 +138,6 @@ import { makeAllRulesImportant } from "./lib/makeEverythingImportant";
     if (disableAll !== request.prefs.disableAll) {
       doDisableAll(request.prefs.disableAll);
     }
-    console.timeEnd("[CSSManager] Apply Style");
   }
 
   function doDisableAll(disable = disableAll) {

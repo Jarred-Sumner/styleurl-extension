@@ -161,14 +161,17 @@ const sendStyleDiffChangedEvent = el => {
 };
 
 const sendContentStyles = () => {
-  getGeneralStyles().then(stylesheets => {
-    if (!connection) {
-      return;
-    }
+  return new Promise(resolve => {
+    getGeneralStyles().then(stylesheets => {
+      if (!connection) {
+        return;
+      }
 
-    connection.sendMessage(`background:${PORT_TYPES.devtool_widget}`, {
-      kind: MESSAGE_TYPES.send_content_stylesheets,
-      value: stylesheets
+      connection.sendMessage(`background:${PORT_TYPES.devtool_widget}`, {
+        kind: MESSAGE_TYPES.send_content_stylesheets,
+        value: stylesheets
+      });
+      resolve();
     });
   });
 };
@@ -202,8 +205,29 @@ chrome.devtools.inspectedWindow.onResourceAdded.addListener(
   sendStyleDiffChangedEvent
 );
 
-// chrome.devtools.inspectedWindow.onResourceAdded.addListener(sendContentStyles);
-// above causes inf loop, not sure why
+chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(
+  resource => {
+    if (resource.url.startsWith("debugger://")) {
+      return;
+    }
+    sendContentStyles(resource).then(() => {
+      connection.sendMessage(`background:${PORT_TYPES.devtool_widget}`, {
+        kind: MESSAGE_TYPES.open_style_editor
+      });
+
+      connection.sendMessage(
+        `content_script:${PORT_TYPES.inline_header}:${
+          chrome.devtools.inspectedWindow.tabId
+        }`,
+        { kind: MESSAGE_TYPES.style_diff_changed }
+      );
+
+      connection.sendMessage(`background:${PORT_TYPES.devtool_widget}`, {
+        kind: MESSAGE_TYPES.style_diff_changed
+      });
+    });
+  }
+);
 setupConnection();
 
 chrome.devtools.panels.elements.onSelectionChanged.addListener(() => {

@@ -36,7 +36,8 @@ export const MESSAGE_TYPES = {
   upload_stylesheets: "upload_stylesheets",
   start_observing_inline_styles: "start_observing_inline_styles",
   stop_observing_inline_styles: "start_observing_inline_styles",
-  geT_inline_style_diff: "get_all_inline_styles"
+  geT_inline_style_diff: "get_all_inline_styles",
+  open_style_editor: "open_style_editor"
 };
 
 export const STYLESHEET_TYPE = {

@@ -2,6 +2,7 @@
 // ...thanks
 import Messenger from "chrome-ext-messenger";
 import { PORT_TYPES, MESSAGE_TYPES } from "./lib/port";
+import { makeAllRulesImportant } from "./lib/makeEverythingImportant";
 
 (() => {
   if (typeof window.applyOnMessage === "function") {
@@ -68,17 +69,20 @@ import { PORT_TYPES, MESSAGE_TYPES } from "./lib/port";
     const styles = stylesheets.map(stylesheet => ({
       code: stylesheet[1],
       id: stylesheet[0],
-      enabled: isStyleEnabled
+      enabled: isStyleEnabled,
+      important: stylesheet[0].includes(".inline.css")
     }));
+
+    const _stylesMap = {};
+
+    styles.forEach(style => (_stylesMap[style.id] = [style]));
+    _stylesMap.length = styles.length;
 
     return {
       prefs: {
         disableAll: !isStyleEnabled
       },
-      styles: {
-        length: 1,
-        1: styles
-      }
+      styles: _stylesMap
     };
   };
 
@@ -254,7 +258,11 @@ import { PORT_TYPES, MESSAGE_TYPES } from "./lib/port";
       for (const id in styles) {
         const sections = styles[id];
         if (!Array.isArray(sections)) continue;
-        applySections(id, sections.map(({ code }) => code).join("\n"));
+        applySections(
+          id,
+          sections.map(({ code }) => code).join("\n"),
+          sections.find(({ important = false }) => !!important)
+        );
       }
       docRootObserver.start({ sort: true });
     }
@@ -273,7 +281,7 @@ import { PORT_TYPES, MESSAGE_TYPES } from "./lib/port";
     }
   }
 
-  function applySections(styleId, code) {
+  function applySections(styleId, code, important) {
     const id = ID_PREFIX + styleId;
     let el = styleElements.get(id) || document.getElementById(id);
     if (el && el.textContent !== code) {
@@ -303,14 +311,19 @@ import { PORT_TYPES, MESSAGE_TYPES } from "./lib/port";
       });
       // SVG className is not a string, but an instance of SVGAnimatedString
       el.classList.add("styleurl");
-      addStyleElement(el);
+
+      if (important) {
+        el.classList.add("styleurl--important");
+      }
+
+      addStyleElement(el, important);
     }
     styleElements.set(id, el);
     disabledElements.delete(Number(styleId));
     return el;
   }
 
-  function addStyleElement(newElement) {
+  function addStyleElement(newElement, important) {
     if (!ROOT) {
       return;
     }
@@ -575,6 +588,10 @@ import { PORT_TYPES, MESSAGE_TYPES } from "./lib/port";
       if (el.disabled !== disableAll) {
         // moving an element resets its 'disabled' state
         el.disabled = disableAll;
+      }
+
+      if (el.className.includes("styleurl--important")) {
+        makeAllRulesImportant(el);
       }
       return true;
     }

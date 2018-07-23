@@ -16,7 +16,9 @@ input {
     width: 100%;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
     margin: 0;
     padding: 0;
     font-weight: 600;
@@ -33,7 +35,7 @@ h1, h2, h3 {
 
 .ViewChanges-actions {
     display: flex;
-    border-top: 1px solid #13161B;
+    border-top: 1px solid #13161b;
 }
 
 .ViewChanges-separator {
@@ -66,5 +68,23 @@ h1, h2, h3 {
 
 .ViewChanges-action:hover,
 .ViewChanges-separator {
-    background-color: #13161B;
+    background-color: #13161b;
+}
+
+.ShareLink {
+    font-size: 14px;
+    color: #fff;
+    background-color: rgb(65, 70, 81);
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border: 0;
+    outline: 0;
+    padding: 6px 8px;
+    width: 200px;
+    display: none;
+}
+
+.ShareLink--shown {
+    display: inline-block;
 }

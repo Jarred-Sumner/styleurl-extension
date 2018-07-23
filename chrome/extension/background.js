@@ -57,15 +57,12 @@ Raven.context(function() {
 
   messenger.initBackgroundHub({
     connectedHandler: function(extensionPart, connectionName, tabId) {
-      if (extensionPart === "devtool" && tabId) {
-        injectInlineStyleObserver(tabId, () => {
-          inlineStyleObserverConnection.sendMessage(
-            `content_script:${PORT_TYPES.inline_style_observer}:${tabId}`,
-            {
-              kind: MESSAGE_TYPES.start_observing_inline_styles
-            }
-          );
-        });
+      if (
+        extensionPart === "devtool" &&
+        tabId &&
+        !styleURLsForTabId(tabId).length
+      ) {
+        injectInlineStyleObserver(tabId);
       }
     },
     disconnectedHandler: function(extensionPart, connectionName, tabId) {
@@ -76,7 +73,11 @@ Raven.context(function() {
         setBrowserActionToDefault({ tabId });
       }
 
-      if (extensionPart === "devtool" && tabId) {
+      if (
+        extensionPart === "devtool" &&
+        tabId &&
+        !styleURLsForTabId(tabId).length
+      ) {
         inlineStyleObserverConnection.sendMessage(
           `content_script:${PORT_TYPES.inline_style_observer}:${tabId}`,
           {
@@ -167,7 +168,6 @@ Raven.context(function() {
     const gistId = getGistIDFromURL(url);
 
     if (!gistId) {
-      log("Gist ID not found");
       return;
     }
 
@@ -284,13 +284,6 @@ Raven.context(function() {
             photo
           ) {
             window.setTimeout(async () => {
-              chrome.tabs.create({ url: stylesheetResponse.data.url }, tab => {
-                const gistId = getGistIDFromURL(tab.url);
-
-                if (gistId) {
-                  injectViewStyleURLBar(tab.tabId);
-                }
-              });
               // Capturing the photo fails sometimes shrug
               if (photo) {
                 uploadScreenshot({
@@ -462,6 +455,7 @@ Raven.context(function() {
   );
 
   const autoInsertCSS = async tab => {
+    await autodetectStyleURL(tab);
     const styleURLs = styleURLsForTabId(tab.tabId);
 
     // Handle case where we haven't loaded the styleurl gist yet
@@ -513,7 +507,11 @@ Raven.context(function() {
       );
     }
 
-    if (styleURLs.find(({ isBarEnabled }) => isBarEnabled)) {
+    if (
+      styleURLs
+        .filter(({ isBarEnabled }) => isBarEnabled)
+        .find(styleURL => styleURL.canApplyStyle(tab.url))
+    ) {
       injectViewStyleURLBar(tabId);
     }
   });

@@ -16,6 +16,8 @@ export class InlineStyleObserverManager {
     this.oldStylesheet = null;
     this.newStylesheet = null;
     this._observer = new InlineStyleObserver(this.handleChange);
+
+    window.__styleurlSetSelected = this._observer.setSelectedElement;
   }
 
   _sendMessage = message => {

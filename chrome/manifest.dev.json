@@ -60,5 +60,5 @@
     "notifications"
   ],
   "content_security_policy":
-    "default-src 'self'; script-src 'self' https://gist.github.com http://localhost:3000 https://localhost:3000 'unsafe-eval'; connect-src https://gist.github.com https://gist.githubusercontent.com http://localhost:3000 https://s3-us-west-2.amazonaws.com https://api.github.com data: https://styleurlapp.s3-us-west-2.amazonaws.com https://styleurlapp.s3.us-west-2.amazonaws.com http://localhost:3001 http://localhost:3002 https://localhost:3000; style-src * 'unsafe-inline' 'self' blob:; img-src 'self' data:; font-src 'self' data: http://localhost:3000;"
+    "default-src 'self'; script-src 'self' https://gist.github.com http://localhost:3000 https://localhost:3000 'unsafe-eval'; connect-src https://sentry.io https://gist.github.com https://gist.githubusercontent.com http://localhost:3000 https://s3-us-west-2.amazonaws.com https://api.github.com data: https://styleurlapp.s3-us-west-2.amazonaws.com https://styleurlapp.s3.us-west-2.amazonaws.com http://localhost:3001 http://localhost:3002 https://localhost:3000; style-src * 'unsafe-inline' 'self' blob:; img-src 'self' data:; font-src 'self' data: http://localhost:3000;"
 }

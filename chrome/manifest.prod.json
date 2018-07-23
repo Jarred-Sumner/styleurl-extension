@@ -51,5 +51,5 @@
     "notifications"
   ],
   "content_security_policy":
-    "default-src 'self'; script-src 'self' https://gist.github.com 'unsafe-eval'; connect-src https://gist.github.com https://gist.githubusercontent.com https://s3-us-west-2.amazonaws.com https://api.github.com data: https://styleurlapp.s3-us-west-2.amazonaws.com https://styleurlapp.s3.us-west-2.amazonaws.com https://api.styleurl.app https://www.styleurl.app https://styleurl.app; style-src * 'unsafe-inline' 'self' blob:; img-src 'self' data:; font-src 'self' data:;"
+    "default-src 'self'; script-src 'self' https://gist.github.com 'unsafe-eval'; connect-src https://sentry.io https://gist.github.com https://gist.githubusercontent.com https://s3-us-west-2.amazonaws.com https://api.github.com data: https://styleurlapp.s3-us-west-2.amazonaws.com https://styleurlapp.s3.us-west-2.amazonaws.com https://api.styleurl.app https://www.styleurl.app https://styleurl.app; style-src * 'unsafe-inline' 'self' blob:; img-src 'self' data:; font-src 'self' data:;"
 }

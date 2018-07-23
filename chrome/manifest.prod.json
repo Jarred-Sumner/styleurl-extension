@@ -33,6 +33,7 @@
     "<all_urls>",
     "webNavigation",
     "storage",
+    "clipboardWrite",
     "notifications"
   ],
   "content_security_policy":

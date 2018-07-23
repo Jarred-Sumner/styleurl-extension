@@ -431,13 +431,13 @@ Raven.context(function() {
   chrome.browserAction.onClicked.addListener(tab => {
     console.log("Clicked Browser Action", getBrowserActionState());
     if (getBrowserActionState() === BROWSER_ACTION_STATES.default) {
-      injectCreateStyleURLBar(tab.tabId);
+      injectCreateStyleURLBar(tab.id);
     } else if (getBrowserActionState() === BROWSER_ACTION_STATES.upload_style) {
-      injectCreateStyleURLBar(tab.tabId);
+      injectCreateStyleURLBar(tab.id);
     } else if (
       getBrowserActionState() === BROWSER_ACTION_STATES.style_applied
     ) {
-      injectViewStyleURLBar(tab.tabId);
+      injectViewStyleURLBar(tab.id);
     }
   });
 

@@ -221,33 +221,26 @@ class CreateStyleURLContainer extends React.Component {
           const shareURL = response.data.share_url;
 
           this.setState({ shareURL }, () => {
-            navigator.permissions
-              .request({
-                name: "clipboard-write",
-                access: "write"
-              })
-              .then(({ state }) => {
-                if (state === "granted") {
-                  navigator.clipboard.writeText(shareURL).then(() => {
-                    this._sendMessage({
-                      kind: MESSAGE_TYPES.send_success_notification,
-                      value: {
-                        didCopy: true
-                      }
-                    });
-                  });
-                } else {
-                  this._sendMessage({
-                    kind: MESSAGE_TYPES.send_success_notification,
-                    value: {
-                      didCopy: false
-                    }
-                  });
-                }
-              });
-
-            window.open(response.data.url, "_blank");
+            navigator.clipboard.writeText(shareURL).then(
+              () => {
+                this._sendMessage({
+                  kind: MESSAGE_TYPES.send_success_notification,
+                  value: {
+                    didCopy: true
+                  }
+                });
+              },
+              () =>
+                this._sendMessage({
+                  kind: MESSAGE_TYPES.send_success_notification,
+                  value: {
+                    didCopy: false
+                  }
+                })
+            );
           });
+
+          window.open(response.data.url, "_blank");
         }
       });
     });

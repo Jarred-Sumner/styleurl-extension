@@ -380,9 +380,9 @@ Raven.context(function() {
         const WARNING_COMMENT = `/* These changes are from inline styles, so the selectors might be a litttle crazy and if the page does lots of inline styles, unrelated changes could show up here. */`;
 
         return {
-          url: old_stylesheet.url,
+          url: new_stylesheet.url,
           content: `${WARNING_COMMENT}\n${diffSheet(
-            old_stylesheet.content,
+            old_stylesheet ? old_stylesheet.content : "",
             new_stylesheet.content
           )}`
         };

@@ -88,8 +88,6 @@ export class InlineStyleObserverManager {
     oldStylesheet.content = oldRules.join("\n");
     newStylesheet.content = newRules.join("\n");
 
-    newStylesheet.content;
-
     this.oldStylesheet = oldStylesheet;
     this.newStylesheet = newStylesheet;
 

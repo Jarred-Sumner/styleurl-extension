@@ -16,6 +16,10 @@ module.exports = {
       customPath,
       path.join(__dirname, "../chrome/extension/inline_style_observer")
     ],
+    version_info: [
+      customPath,
+      path.join(__dirname, "../chrome/extension/version_info")
+    ],
     css_manager_content_script: [
       customPath,
       path.join(__dirname, "../chrome/extension/css_manager_content_script")

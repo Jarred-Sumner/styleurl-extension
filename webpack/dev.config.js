@@ -27,6 +27,10 @@ module.exports = {
       customPath,
       path.join(__dirname, "../chrome/extension/css_manager_content_script")
     ],
+    version_info: [
+      customPath,
+      path.join(__dirname, "../chrome/extension/version_info")
+    ],
     create_styleurl: [
       customPath,
       path.join(__dirname, "../chrome/extension/create_styleurl")

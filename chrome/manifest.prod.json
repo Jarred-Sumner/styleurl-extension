@@ -28,6 +28,18 @@
       "run_at": "document_end"
     },
     {
+      "matches": [
+        "https://api.styleurl.app/*",
+        "https://styleurl.app/*",
+        "https://www.styleurl.app/*",
+        "https://api.styleurl.app",
+        "https://styleurl.app",
+        "https://www.styleurl.app"
+      ],
+      "js": ["version_info.bundle.js"],
+      "run_at": "document_start"
+    },
+    {
       "matches": ["<all_urls>"],
       "js": ["inline_style_observer.bundle.js"],
       "run_at": "document_start"

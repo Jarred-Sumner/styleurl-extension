@@ -6,8 +6,6 @@ const messenger = new Messenger();
 
 let connection;
 
-let styleManagerOpened = false;
-
 const log = (...messages) => {
   connection.sendMessage(`background:${PORT_TYPES.devtool_widget}`, {
     kind: MESSAGE_TYPES.log,
@@ -208,12 +206,9 @@ chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(
       return;
     }
     sendContentStyles(resource).then(() => {
-      if (styleManagerOpened === false) {
-        styleManagerOpened = true;
-        connection.sendMessage(`background:${PORT_TYPES.devtool_widget}`, {
-          kind: MESSAGE_TYPES.open_style_editor
-        });
-      }
+      connection.sendMessage(`background:${PORT_TYPES.devtool_widget}`, {
+        kind: MESSAGE_TYPES.open_style_editor
+      });
 
       connection.sendMessage(
         `content_script:${PORT_TYPES.inline_header}:${

@@ -40,8 +40,18 @@ const ShareIcon = ({ width, height, ...otherProps }) => (
   </svg>
 );
 
+const CloseIcon = ({ width, height, ...otherProps }) => (
+  <svg {...otherProps} width={width} height={height} viewBox="0 0 100 100">
+    <path
+      className="IconFill"
+      d="M72.9 11.5L50 34.4 27.1 11.5c-2.9-2.9-7.7-2.9-10.6 0l-4.2 4.2c-2.9 2.9-2.9 7.7 0 10.6l22.9 22.9-23 23c-2.9 2.9-2.9 7.7 0 10.6l4.2 4.2c2.9 2.9 7.7 2.9 10.6 0l23-22.9L72.9 87c2.9 2.9 7.7 2.9 10.6 0l4.2-4.2c2.9-2.9 2.9-7.7 0-10.6L64.8 49.3l22.9-22.9c2.9-2.9 2.9-7.7 0-10.6l-4.2-4.2c-2.9-3-7.6-3-10.6-.1z"
+    />
+  </svg>
+);
+
 const ICON_BY_NAME = {
   fork: ForkIcon,
+  close: CloseIcon,
   code: CodeIcon,
   share: ShareIcon,
   export: ExportIcon

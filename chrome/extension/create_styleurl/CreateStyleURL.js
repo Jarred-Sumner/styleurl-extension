@@ -12,6 +12,7 @@ import { StylesheetCodePreview } from "../../app/components/StylesheetCodePrevie
 import CodeDiff, { concatStylesheets } from "../../app/components/CodeDiff";
 import filenameify from "filenamify";
 import classNames from "classnames";
+import injectScriptNames from "../lib/injectScriptNames";
 
 const messenger = new Messenger();
 
@@ -264,10 +265,15 @@ class CreateStyleURLContainer extends React.Component {
     });
   };
 
-  handlehide = () => {
+  handleHide = () => {
     this.setState({
       hidden: true
     });
+
+    const shadowRoot = document.querySelector(
+      `#${injectScriptNames.inject_create_styleurl}`
+    );
+    shadowRoot.style.display = "none";
   };
 
   render() {

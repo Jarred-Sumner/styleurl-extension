@@ -26,3 +26,13 @@
 .HeaderSide--center {
     justify-content: center;
 }
+
+.HeaderBar-hideButton {
+    margin-right: 14px;
+    color: gray;
+    cursor: pointer;
+}
+
+.HeaderBar-hideButton:hover {
+    color: white;
+}

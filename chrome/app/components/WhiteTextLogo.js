@@ -12,16 +12,21 @@ const getSrcSet = () =>
   [1, 2, 3].map(size => `${getSrcForSize(size)} ${size}x`).join(", \n");
 
 export default ({ src, srcSet, ...otherProps }) => (
-  <img
-    {...otherProps}
-    src={getSrcForSize()}
-    srcSet={getSrcSet()}
-    height={28}
-    width={76}
-    style={{
-      userSelect: "none",
-      MozUserSelect: "none",
-      WebkitUserSelect: "none"
-    }}
-  />
+  <a
+    href={`${__FRONTEND_HOST__}/?utm_source="ext_logo_button"`}
+    target="_blank"
+  >
+    <img
+      {...otherProps}
+      src={getSrcForSize()}
+      srcSet={getSrcSet()}
+      height={28}
+      width={76}
+      style={{
+        userSelect: "none",
+        MozUserSelect: "none",
+        WebkitUserSelect: "none"
+      }}
+    />
+  </a>
 );

@@ -8,6 +8,7 @@ import Dropdown from "../../app/components/Dropdown";
 import { Icon } from "../../app/components/Icon";
 import { StylesheetCodePreview } from "../../app/components/StylesheetCodePreview";
 import { CopyToClipboard } from "react-copy-to-clipboard";
+import injectScriptNames from "../lib/injectScriptNames";
 const messenger = new Messenger();
 
 const buildShareURL = ({ domain, id }) => {
@@ -32,6 +33,8 @@ class ViewStyleURL extends React.PureComponent {
       isStyleEnabled,
       isBarEnabled,
       gistId,
+      hidden,
+      onHide,
       stylesheets,
       onClickShare,
       shareURL
@@ -39,7 +42,8 @@ class ViewStyleURL extends React.PureComponent {
 
     return (
       <HeaderBar
-        hidden={!isBarEnabled}
+        hidden={!isBarEnabled || hidden}
+        onHide={onHide}
         center={
           <Switcher
             onLabel="New changes"
@@ -83,9 +87,18 @@ class ViewStyleURLContainer extends React.Component {
     this.state = {
       styleurl: null,
       isBarEnabled: false,
+      hidden: false,
       isStyleEnabled: false
     };
   }
+
+  handleHide = () => {
+    this.setState({ hidden: true });
+    const shadowRoot = document.querySelector(
+      `#${injectScriptNames.inject_view_styleurl}`
+    );
+    shadowRoot.style.display = "none";
+  };
 
   componentDidMount() {
     this._sendMessage(MESSAGE_TYPES.get_styleurl).then(({ value }) =>
@@ -146,7 +159,7 @@ class ViewStyleURLContainer extends React.Component {
   }
 
   render() {
-    const { isStyleEnabled, isBarEnabled } = this.state;
+    const { isStyleEnabled, isBarEnabled, hidden } = this.state;
     console.log(this.state.styleurl);
 
     return (
@@ -157,6 +170,8 @@ class ViewStyleURLContainer extends React.Component {
         gistId={this.state.styleurl ? this.state.styleurl.gistId : null}
         toggleApplyStyle={this.toggleApplyStyle}
         onClickShare={this.handleClickShare}
+        hidden={hidden}
+        onHide={this.handleHide}
         shareURL={
           this.state.styleurl &&
           buildShareURL({

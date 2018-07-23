@@ -104,7 +104,7 @@ class CreateStyleURL extends React.PureComponent {
       >
         <Dropdown
           onToggle={onToggleDiff}
-          icon={<Icon width={"32"} height="20" name="code" />}
+          icon={<Icon width={"32"} height="15" name="code" />}
           title="View changes"
         >
           <div className="ViewChanges">
@@ -126,7 +126,7 @@ class CreateStyleURL extends React.PureComponent {
         </Dropdown>
         <Dropdown
           onClick={onShareChanges}
-          icon={<Icon width={"24"} height="21" name="share" />}
+          icon={<Icon width={"24"} height="15" name="share" />}
           title="Share changes"
         />
       </HeaderBar>

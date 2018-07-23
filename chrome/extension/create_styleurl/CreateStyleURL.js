@@ -11,6 +11,7 @@ import { Icon } from "../../app/components/Icon";
 import { StylesheetCodePreview } from "../../app/components/StylesheetCodePreview";
 import CodeDiff, { concatStylesheets } from "../../app/components/CodeDiff";
 import filenameify from "filenamify";
+import classNames from "classnames";
 
 const messenger = new Messenger();
 
@@ -60,6 +61,8 @@ class CreateStyleURL extends React.PureComponent {
 
         return { stylesheets: [], downloadURL: null };
       }
+    } else {
+      return {};
     }
   }
 
@@ -72,9 +75,27 @@ class CreateStyleURL extends React.PureComponent {
   };
 
   render() {
-    const { onToggleDiff, onExport, onShareChanges, stylesheets } = this.props;
+    const {
+      onToggleDiff,
+      onExport,
+      onShareChanges,
+      stylesheets,
+      shareURL,
+      setShareLinkRef
+    } = this.props;
     return (
-      <HeaderBar>
+      <HeaderBar
+        center={
+          <input
+            value={shareURL}
+            readOnly
+            ref={setShareLinkRef}
+            className={classNames("ShareLink", {
+              "ShareLink--shown": shareURL
+            })}
+          />
+        }
+      >
         <Dropdown
           onToggle={onToggleDiff}
           icon={<Icon width={"32"} height="20" name="code" />}
@@ -113,6 +134,7 @@ class CreateStyleURLContainer extends React.Component {
 
     this.state = {
       width: INITIAL_WIDTH,
+      shareURL: "",
       stylesheets: []
     };
 
@@ -131,6 +153,8 @@ class CreateStyleURLContainer extends React.Component {
       this._connection.disconnect();
     }
   }
+
+  setShareLinkRef = shareLinkRef => (this.shareLinkRef = shareLinkRef);
 
   handleToggleDiff = isOpen => {
     if (isOpen) {
@@ -195,13 +219,34 @@ class CreateStyleURLContainer extends React.Component {
           response.data.visibility === "publicly_visible"
         ) {
           const shareURL = response.data.share_url;
-          const didCopy = copyToClipboard(shareURL);
 
-          return this._sendMessage({
-            kind: MESSAGE_TYPES.send_success_notification,
-            value: {
-              didCopy
-            }
+          this.setState({ shareURL }, () => {
+            navigator.permissions
+              .request({
+                name: "clipboard-write",
+                access: "write"
+              })
+              .then(({ state }) => {
+                if (state === "granted") {
+                  navigator.clipboard.writeText(shareURL).then(() => {
+                    this._sendMessage({
+                      kind: MESSAGE_TYPES.send_success_notification,
+                      value: {
+                        didCopy: true
+                      }
+                    });
+                  });
+                } else {
+                  this._sendMessage({
+                    kind: MESSAGE_TYPES.send_success_notification,
+                    value: {
+                      didCopy: false
+                    }
+                  });
+                }
+              });
+
+            window.open(response.data.url, "_blank");
           });
         }
       });
@@ -215,6 +260,8 @@ class CreateStyleURLContainer extends React.Component {
         onShareChanges={this.handleShareChanges}
         stylesheets={this.state.stylesheets}
         onToggleDiff={this.handleToggleDiff}
+        setShareLinkRef={this.setShareLinkRef}
+        shareURL={this.state.shareURL}
       />
     );
   }

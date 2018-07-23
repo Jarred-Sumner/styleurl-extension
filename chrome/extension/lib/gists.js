@@ -27,8 +27,13 @@ export const getGistIDFromURL = url => {
   }
 
   const params = new URLSearchParams(queryString);
+  const param = params.get(SPECIAL_QUERY_PARAMS.gist_id);
 
-  return _.last(params.get(SPECIAL_QUERY_PARAMS.gist_id).split("gist_"));
+  if (!param) {
+    return null;
+  }
+
+  return _.last(param.split("gist_"));
 };
 
 export const getStylesheetsFromGist = gist => {

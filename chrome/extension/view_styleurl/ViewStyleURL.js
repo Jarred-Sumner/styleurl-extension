@@ -14,7 +14,17 @@ const buildShareURL = ({ domain, id }) => {
   return `${__FRONTEND_HOST__}/${domain}/${id}`;
 };
 
+const buildForkURL = ({ gistId }) => {
+  return `${__API_HOST__}/api/fork?gist_id=${encodeURIComponent(gistId)}`;
+};
+
 class ViewStyleURL extends React.PureComponent {
+  handleOpenFork = () => {
+    const { gistId } = this.props;
+
+    window.open(buildForkURL({ gistId }), "_blank");
+  };
+
   render() {
     const {
       toggleApplyStyle,
@@ -41,6 +51,7 @@ class ViewStyleURL extends React.PureComponent {
       >
         <Dropdown
           icon={<Icon width={"18"} height="24" name="fork" />}
+          onClick={this.handleOpenFork}
           title="Fork"
         />
         <Dropdown

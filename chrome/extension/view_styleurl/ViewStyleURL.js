@@ -54,19 +54,19 @@ class ViewStyleURL extends React.PureComponent {
         }
       >
         <Dropdown
-          icon={<Icon width={"18"} height="24" name="fork" />}
+          icon={<Icon width={"18"} height="15" name="fork" />}
           onClick={this.handleOpenFork}
           title="Fork"
         />
         <Dropdown
-          icon={<Icon width={"32"} height="20" name="code" />}
+          icon={<Icon width={"32"} height="15" name="code" />}
           title="Code"
         >
           <StylesheetCodePreview gistId={gistId} stylesheets={stylesheets} />
         </Dropdown>
         <CopyToClipboard text={shareURL} onCopy={onClickShare}>
           <Dropdown
-            icon={<Icon width={"24"} height="21" name="share" />}
+            icon={<Icon width={"24"} height="15" name="share" />}
             title="Share"
           />
         </CopyToClipboard>

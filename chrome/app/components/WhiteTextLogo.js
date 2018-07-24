@@ -20,8 +20,8 @@ export default ({ src, srcSet, ...otherProps }) => (
       {...otherProps}
       src={getSrcForSize()}
       srcSet={getSrcSet()}
-      height={28}
-      width={76}
+      height={22.4}
+      width={60.8}
       style={{
         userSelect: "none",
         MozUserSelect: "none",

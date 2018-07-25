@@ -1,3 +1,8 @@
+// Privacy Notice
+// StyleURL does *not* send all gists the user opens to StyleURL's server.
+// Before requesting the contents of the gist, StyleURL looks for "Stylefile.yml" or "Stylefile" to assess whether or not it might be a StyleURL
+// Only when it does find a matching filename, it requests the content of the stylesheets
+// We want to protect user's privacy as much as possible, even if its a little more work for us.
 import { MESSAGE_TYPES, PORT_TYPES } from "./lib/port";
 import { SPECIAL_QUERY_PARAMS, STYLEFILE_NAMES } from "./lib/gists";
 import { loadStylefileFromString } from "./lib/stylefile";

@@ -83,6 +83,7 @@
     "diff-match-patch": "^1.0.1",
     "filenamify": "^2.1.0",
     "js-yaml": "^3.12.0",
+    "jshashes": "^1.0.7",
     "lodash": "^4.17.10",
     "optimal-select": "^4.0.1",
     "postcss-cssnext": "^3.1.0",
@@ -100,7 +101,7 @@
     "redux-thunk": "^2.0.1",
     "reset-css": "^4.0.1",
     "sticky-js": "^1.2.0",
-    "stylesheet-differ": "https://github.com/lukemiles/stylesheet-differ",
+    "stylesheet-differ": "^0.0.7",
     "url-parse": "^1.4.1",
     "url-pattern": "^1.0.3"
   }

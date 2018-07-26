@@ -16,6 +16,14 @@ import injectScriptNames from "../lib/injectScriptNames";
 
 const messenger = new Messenger();
 
+export const getFilename = () => {
+  // The plus here is just here so the VSCode syntax highlighter doesnt get messed up
+  // Weird VSCode bug :shrug:
+  return filenameify(`${location.pathname.substr(1)}.diff` + ".css", {
+    replacement: "_"
+  });
+};
+
 const buildEditURL = gistId => {
   return `${__API_HOST__}/api/gists/edit/${gistId}`;
 };
@@ -67,14 +75,6 @@ class CreateStyleURL extends React.PureComponent {
     }
   }
 
-  getFilename = () => {
-    // The plus here is just here so the VSCode syntax highlighter doesnt get messed up
-    // Weird VSCode bug :shrug:
-    return filenameify(`${location.pathname.substr(1)}.diff` + ".css", {
-      replacement: "_"
-    });
-  };
-
   render() {
     const {
       onToggleDiff,
@@ -112,7 +112,7 @@ class CreateStyleURL extends React.PureComponent {
             <div className="ViewChanges-actions">
               <a
                 href={this.state.downloadURL}
-                download={this.getFilename()}
+                download={getFilename()}
                 className="ViewChanges-action"
               >
                 <div className="ViewChanges-action-text">Download</div>

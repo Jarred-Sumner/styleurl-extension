@@ -19,7 +19,7 @@ export class Button extends React.Component {
   };
 
   render() {
-    const { children, color, size, icon, onClick, href } = this.props;
+    const { children, color, size, icon, onClick, href, download } = this.props;
 
     const ComponentName = href ? "a" : "div";
 
@@ -42,7 +42,8 @@ export class Button extends React.Component {
           "Button--color-default":
             BUTTON_COLORS[color] === BUTTON_COLORS.default,
           "Button--size-default": BUTTON_COLORS[size] === BUTTON_SIZES.default
-        })
+        }),
+        download
       },
       child
     );

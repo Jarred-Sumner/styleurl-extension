@@ -1,8 +1,10 @@
 import _ from "lodash";
+import Hashes from "jshashes";
 import { portName, MESSAGE_TYPES, PORT_TYPES } from "./lib/port";
 import Messenger from "chrome-ext-messenger";
 
 const messenger = new Messenger();
+const SHA256 = new Hashes.SHA256();
 
 let connection;
 
@@ -35,12 +37,21 @@ const getResources = () =>
     })
   );
 
+const getResourceUrl = resource => {
+  let resourceUrl = resource.url;
+  if (resourceUrl.startsWith("data:")) {
+    resourceUrl = `datauri-${SHA256.hex(resourceUrl)}.css`;
+  }
+  return resourceUrl;
+};
+
 const getResourceContent = resource =>
   new Promise((resolve, reject) => {
-    log("GET", resource.url);
+    const resourceUrl = getResourceUrl(resource);
+    log("GET", resourceUrl);
     resource.getContent(content => {
       resolve({
-        url: resource.url,
+        url: resourceUrl,
         content
       });
     });

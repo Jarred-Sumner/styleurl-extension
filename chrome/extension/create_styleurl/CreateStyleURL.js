@@ -1,18 +1,15 @@
-import React from "react";
-import Messenger from "chrome-ext-messenger";
-import _ from "lodash";
-import { INITIAL_WIDTH } from "./messages";
 import { HeaderBar } from "app/components/HeaderBar";
-import { PORT_TYPES, MESSAGE_TYPES } from "../lib/port";
-import { Button } from "app/components/Button";
-import { BUTTON_COLORS } from "../../app/components/Button";
+import Messenger from "chrome-ext-messenger";
+import classNames from "classnames";
+import filenameify from "filenamify";
+import _ from "lodash";
+import React from "react";
+import CodeDiff, { concatStylesheets } from "../../app/components/CodeDiff";
 import Dropdown from "../../app/components/Dropdown";
 import { Icon } from "../../app/components/Icon";
-import { StylesheetCodePreview } from "../../app/components/StylesheetCodePreview";
-import CodeDiff, { concatStylesheets } from "../../app/components/CodeDiff";
-import filenameify from "filenamify";
-import classNames from "classnames";
 import injectScriptNames from "../lib/injectScriptNames";
+import { MESSAGE_TYPES, PORT_TYPES } from "../lib/port";
+import { INITIAL_WIDTH } from "./messages";
 
 const messenger = new Messenger();
 

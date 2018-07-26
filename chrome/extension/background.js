@@ -21,6 +21,7 @@ import {
   uploadScreenshot,
   SCREENSHOT_CONTENT_TYPE
 } from "./lib/api";
+import injectScriptNames from "./lib/injectScriptNames";
 import {
   setBrowserActionToDefault,
   setBrowserActionToUploadStyle,
@@ -144,6 +145,29 @@ Raven.context(function() {
       LAST_RECEIVED_TAB_ORIGINAL_STYLES[tabId] &&
       new Date().getTime() - LAST_RECEIVED_TAB_ORIGINAL_STYLES[tabId] > 5000
     );
+  };
+
+  const toggleStylebar = (tabId, show) => {
+    const script = (idName, opacity) => {
+      document.getElementById(idName).style.opacity = opacity;
+    };
+
+    return new Promise(resolve => {
+      chrome.tabs.executeScript(
+        tabId,
+        {
+          code: `(${script.toString()})("${
+            injectScriptNames.inject_create_styleurl
+          }", ${show ? 1 : 0})`,
+          runAt: "document_start"
+        },
+        () => {
+          setTimeout(() => {
+            resolve();
+          }, 50);
+        }
+      );
+    });
   };
 
   const sendStyleURLsToTab = ({ tabId }) => {
@@ -286,21 +310,27 @@ Raven.context(function() {
         visibility: request.value.visibility
       }).then(stylesheetResponse => {
         sendResponse(stylesheetResponse);
-
         if (stylesheetResponse.success) {
-          chrome.tabs.captureVisibleTab(null, { format: "png" }, async function(
-            photo
-          ) {
-            window.setTimeout(async () => {
-              // Capturing the photo fails sometimes shrug
-              if (photo) {
-                uploadScreenshot({
-                  photo: await toFile(photo, SCREENSHOT_CONTENT_TYPE),
-                  key: stylesheetResponse.data.id,
-                  domain: stylesheetResponse.data.domain
-                });
+          chrome.tabs.update(tabId, { selected: true });
+          toggleStylebar(tabId, false).then(() => {
+            chrome.tabs.captureVisibleTab(
+              null,
+              { format: "png" },
+              async function(photo) {
+                window.setTimeout(async () => {
+                  // Capturing the photo fails sometimes shrug
+                  if (photo) {
+                    uploadScreenshot({
+                      photo: await toFile(photo, SCREENSHOT_CONTENT_TYPE),
+                      key: stylesheetResponse.data.id,
+                      domain: stylesheetResponse.data.domain
+                    });
+                  }
+
+                  toggleStylebar(tabId, true);
+                }, 50);
               }
-            }, 50);
+            );
           });
         } else {
           alert("Something didnt work quite right. Please try again!");

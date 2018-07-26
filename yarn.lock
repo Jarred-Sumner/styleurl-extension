@@ -7342,9 +7342,9 @@ style-loader@^0.13.1:
   dependencies:
     loader-utils "^1.0.2"
 
-stylesheet-differ@^0.0.7:
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/stylesheet-differ/-/stylesheet-differ-0.0.7.tgz#4cd6d279e837f41c77d37ed656a063a1ab3aeae5"
+stylesheet-differ@^0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/stylesheet-differ/-/stylesheet-differ-0.0.8.tgz#0f6e9a44eec145e3117239dccf57cf2e1cf0f565"
   dependencies:
     cssobj "^1.3.6"
     cssobj-converter "^2.3.3"

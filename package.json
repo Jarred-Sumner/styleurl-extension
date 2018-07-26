@@ -101,7 +101,7 @@
     "redux-thunk": "^2.0.1",
     "reset-css": "^4.0.1",
     "sticky-js": "^1.2.0",
-    "stylesheet-differ": "^0.0.7",
+    "stylesheet-differ": "^0.0.8",
     "url-parse": "^1.4.1",
     "url-pattern": "^1.0.3"
   }

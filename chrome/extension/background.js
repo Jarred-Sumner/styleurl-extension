@@ -304,37 +304,36 @@ Raven.context(function() {
         message: "Share the styleurl by pasting it to a friend or colleague"
       });
     } else if (kind === kinds.upload_stylesheets) {
-      uploadStylesheets({
-        stylesheets: request.value.stylesheets,
-        url: tab.url,
-        visibility: request.value.visibility
-      }).then(stylesheetResponse => {
-        sendResponse(stylesheetResponse);
-        if (stylesheetResponse.success) {
-          chrome.tabs.update(tabId, { selected: true });
-          toggleStylebar(tabId, false).then(() => {
-            chrome.tabs.captureVisibleTab(
-              null,
-              { format: "png" },
-              async function(photo) {
-                window.setTimeout(async () => {
-                  // Capturing the photo fails sometimes shrug
-                  if (photo) {
-                    uploadScreenshot({
-                      photo: await toFile(photo, SCREENSHOT_CONTENT_TYPE),
-                      key: stylesheetResponse.data.id,
-                      domain: stylesheetResponse.data.domain
-                    });
-                  }
+      toggleStylebar(tabId, false).then(() => {
+        chrome.tabs.captureVisibleTab(null, { format: "png" }, async function(
+          photo
+        ) {
+          uploadStylesheets({
+            stylesheets: request.value.stylesheets,
+            url: tab.url,
+            visibility: request.value.visibility
+          }).then(stylesheetResponse => {
+            sendResponse(stylesheetResponse);
+            if (stylesheetResponse.success) {
+              chrome.tabs.update(tabId, { selected: true });
 
-                  toggleStylebar(tabId, true);
-                }, 50);
-              }
-            );
+              window.setTimeout(async () => {
+                // Capturing the photo fails sometimes shrug
+                if (photo) {
+                  uploadScreenshot({
+                    photo: await toFile(photo, SCREENSHOT_CONTENT_TYPE),
+                    key: stylesheetResponse.data.id,
+                    domain: stylesheetResponse.data.domain
+                  });
+                }
+
+                toggleStylebar(tabId, true);
+              }, 50);
+            } else {
+              alert("Something didnt work quite right. Please try again!");
+            }
           });
-        } else {
-          alert("Something didnt work quite right. Please try again!");
-        }
+        });
       });
     }
   };

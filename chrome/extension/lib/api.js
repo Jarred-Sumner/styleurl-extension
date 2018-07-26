@@ -12,6 +12,7 @@ const apiFetch = (path, options = {}) => {
     .fetch(buildURL(path), {
       ...options,
       credentials: "include",
+      redirect: "follow",
       headers: {
         ...(options.headers || {}),
         "User-Agent": `StyleURL v${chrome.app.getDetails().version} (${
@@ -28,6 +29,8 @@ const apiFetch = (path, options = {}) => {
       };
     });
 };
+
+export const getGistById = id => apiFetch(`/api/gists/${id}`);
 
 export const uploadStylesheets = async ({
   stylesheets,

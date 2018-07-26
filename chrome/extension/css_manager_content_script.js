@@ -3,6 +3,7 @@
 import Messenger from "chrome-ext-messenger";
 import { PORT_TYPES, MESSAGE_TYPES } from "./lib/port";
 import { makeAllRulesImportant } from "./lib/makeEverythingImportant";
+import { shouldApplyStyleToURL } from "./lib/stylefile";
 
 (() => {
   if (typeof window.applyOnMessage === "function") {
@@ -63,7 +64,7 @@ import { makeAllRulesImportant } from "./lib/makeEverythingImportant";
   }
 
   const convertFromStyleURL = value => {
-    const { stylesheets = [], isStyleEnabled = true } = value;
+    const { stylesheets = [], isStyleEnabled = true, stylefile = {} } = value;
 
     const styles = stylesheets.map(stylesheet => ({
       code: stylesheet[1],
@@ -79,7 +80,9 @@ import { makeAllRulesImportant } from "./lib/makeEverythingImportant";
 
     return {
       prefs: {
-        disableAll: !isStyleEnabled
+        disableAll:
+          shouldApplyStyleToURL(stylefile, window.location.href) &&
+          !isStyleEnabled
       },
       styles: _stylesMap
     };

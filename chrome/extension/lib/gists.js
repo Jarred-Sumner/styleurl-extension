@@ -6,18 +6,7 @@ export const SPECIAL_QUERY_PARAMS = {
   gist_id: "__styleurl"
 };
 
-export const getGistById = id =>
-  window
-    .fetch(`https://api.github.com/gists/${id}`, {
-      redirect: "follow",
-      credentials: "include",
-      headers: {
-        "Cache-Control": "public, max-age=9999999, s-maxage=9999999"
-      }
-    })
-    .then(resp => {
-      return resp.json();
-    });
+export { getGistById } from "./api";
 
 export const getGistIDFromURL = url => {
   const queryString = _.last(url.split("?"));

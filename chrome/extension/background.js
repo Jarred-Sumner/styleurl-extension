@@ -525,12 +525,8 @@ Raven.context(function() {
     sendStyleURLsToTab({ tabId })
   );
 
-  chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-    if (!tab.url) {
-      return;
-    }
-
-    if (changeInfo.status !== "loading") {
+  const injectBarHistoryListener = async ({ tabId, url }) => {
+    if (!url) {
       return;
     }
 
@@ -547,11 +543,18 @@ Raven.context(function() {
     if (
       styleURLs
         .filter(({ isBarEnabled }) => isBarEnabled)
-        .find(styleURL => styleURL.canApplyStyle(tab.url))
+        .find(styleURL => styleURL.canApplyStyle(url))
     ) {
       injectViewStyleURLBar(tabId);
     }
-  });
+  };
+
+  chrome.webNavigation.onDOMContentLoaded.addListener(injectBarHistoryListener);
+
+  chrome.webNavigation.onHistoryStateUpdated.addListener(
+    injectBarHistoryListener
+  );
+  chrome.webNavigation.onTabReplaced.addListener(injectBarHistoryListener);
 
   chrome.tabs.onRemoved.addListener(tabId => {
     if (TAB_IDS_TO_APPLY_STYLES[tabId]) {

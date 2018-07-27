@@ -1,3 +1,11 @@
+## 1.0.6
+
+Bump version.
+
+## 1.0.5
+
+Bump version.
+
 ## 1.0.4
 
 Bump version.

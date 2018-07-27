@@ -19,7 +19,7 @@ const crx = new ChromeExtension({
 
 const ghRelease = require("gh-release");
 
-const baseName = `${name}-${version}-${new Date().toISOString()}`;
+const baseName = `${name}-${version}`;
 const crxFilename = path.join(RELEASES_PATH, `${baseName}.crx`);
 const zipFileName = path.join(RELEASES_PATH, `${baseName}.zip`);
 
@@ -31,42 +31,64 @@ crx
       fs.writeFile(zipFileName, archiveBuffer, () => {
         console.log(`Wrote ${zipFileName}`);
 
-          const CREDENTIALS_PATH = path.join(__dirname, "../credentials.json");
-          if (fs.existsSync(CREDENTIALS_PATH) && !!argv["release"]) {
-            console.log("Uploading to Chrome Store...");
-            const webStore = require("chrome-webstore-upload")({
-              ...require(CREDENTIALS_PATH),
-              extensionId: "emplcligcppnlalfjknjbanolhlnkmgp"
-            });
-
-            webStore
-              .fetchToken()
-              .then(token => {
-                return webStore
-                  .uploadExisting(fs.createReadStream(zipFileName), token)
-                  .then(res => {
-                    console.log("Uploaded to Chrome Store...Publishing");
-                    return webStore.publish("default", token);
-                  })
-                  .then(() =>
-                    console.log(`Published ${version} to Chrome Store successfully`)
-                  );
-              })
-              .catch(err => console.error(err));
+        const CREDENTIALS_PATH = path.join(__dirname, "../credentials.json");
+        if (!!argv["release"]) {
+          if (!fs.existsSync(CREDENTIALS_PATH)) {
+            console.error(
+              "Expected credentials.json at ",
+              CREDENTIALS_PATH,
+              "to look like",
+              {
+                clientId: "CLIENT_ID",
+                clientSecret: "CLIENT_SECRET",
+                access_token: "ACCESS_TOKEN",
+                expires_in: 3600,
+                refreshToken: "REFRESH_TOKEN",
+                scope: "https://www.googleapis.com/auth/chromewebstore",
+                token_type: "Bearer"
+              }
+            );
+            process.exit();
+            return;
           }
-        });
 
-        return resolve(
-          crx.pack(archiveBuffer).then(crxBuffer => {
-            return new Promise((resolve, reject) => {
-              fs.writeFile(crxFilename, crxBuffer, () => {
-                console.log(`Wrote ${crxFilename}`);
-                resolve();
-              });
-            });
-          })
-        );
+          console.log("Uploading to Chrome Store...");
+          const webStore = require("chrome-webstore-upload")({
+            ...require(CREDENTIALS_PATH),
+            extensionId: "emplcligcppnlalfjknjbanolhlnkmgp"
+          });
+
+          webStore
+            .fetchToken()
+            .then(token => {
+              return webStore
+                .uploadExisting(fs.createReadStream(zipFileName), token)
+                .then(res => {
+                  console.log(res);
+                  console.log("Uploaded to Chrome Store...Publishing");
+                  return webStore.publish("default", token);
+                })
+                .then(res => {
+                  console.log(res);
+                  console.log(
+                    `Published ${version} to Chrome Store successfully`
+                  );
+                });
+            })
+            .catch(err => console.error(err));
+        }
       });
+
+      return resolve(
+        crx.pack(archiveBuffer).then(crxBuffer => {
+          return new Promise((resolve, reject) => {
+            fs.writeFile(crxFilename, crxBuffer, () => {
+              console.log(`Wrote ${crxFilename}`);
+              resolve();
+            });
+          });
+        })
+      );
     });
   })
   .then(() => {
@@ -79,7 +101,6 @@ crx
       version: version,
       target_commitish: "master",
       name: `v${version}`,
-      body: `New version`,
       draft: false,
       prerelease: false,
       repo: "styleurl-extension",

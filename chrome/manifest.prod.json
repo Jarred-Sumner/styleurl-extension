@@ -2,8 +2,7 @@
   "version": "1.0.0",
   "name": "StyleURL",
   "manifest_version": 2,
-  "description":
-    "StyleURL is the easiest way for developers & designers to collaborate on CSS changes. StyleURL lets you export CSS from Chrome Devtools, save CSS changes to a gist, and lets you share your CSS changes via links",
+  "description": "StyleURL lets you export and share CSS tweaks instantly.",
   "browser_action": {},
   "devtools_page": "devtools.html",
   "icons": {

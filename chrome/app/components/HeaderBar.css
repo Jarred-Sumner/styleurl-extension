@@ -1,40 +1,46 @@
 .HeaderBar {
-    background-color: #13161B;
-    padding: 0 28px;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: auto;
-    align-items: center;
-    width: auto;
-    opacity: 1;
+  background-color: #13161b;
+  padding: 0 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto;
+  align-items: center;
+  width: auto;
+  opacity: 1;
 }
 
 .HeaderSide {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .HeaderBar--hidden {
-    opacity: 0;
-    pointer-events: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 780px) {
+  .HeaderBar--logo {
+    display: none;
+  }
 }
 
 .HeaderSide--right {
-    justify-content: flex-end;
+  justify-content: flex-end;
 }
 
 .HeaderSide--center {
-    justify-content: center;
+  justify-content: center;
 }
 
 .HeaderBar-hideButton {
-    margin-right: 14px;
-    color: gray;
-    cursor: pointer;
-    margin-top: auto;
-    margin-bottom: auto;
+  margin-right: 14px;
+  color: gray;
+  cursor: pointer;
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .HeaderBar-hideButton:hover {
-    color: white;
+  color: white;
 }

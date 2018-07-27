@@ -21,7 +21,7 @@ export class HeaderBar extends React.Component {
           <div onClick={onHide} className="HeaderBar-hideButton">
             <Icon height="20" name="close" />
           </div>
-          <WhiteTextLogo />
+          <WhiteTextLogo className="HeaderBar--logo" />
         </div>
 
         <div className="HeaderSide HeaderSide--center">{center}</div>

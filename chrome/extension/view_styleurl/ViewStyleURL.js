@@ -176,7 +176,7 @@ class ViewStyleURLContainer extends React.Component {
           this.state.styleurl &&
           buildShareURL({
             domain: this.state.styleurl.stylefile.domains[0],
-            id: this.state.styleurl.stylefile.id
+            id: this.state.styleurl.gistId
           })
         }
       />

@@ -586,4 +586,23 @@ Raven.context(function() {
     PORT_TYPES.inline_style_observer,
     handleInlineStyleObserverMessages
   );
+
+  // If you just installed and have a styleURL page open, reload the tab so that the content script is loaded
+  chrome.runtime.onInstalled.addListener(() => {
+    chrome.tabs.query({ url: `${__FRONTEND_HOST__}/*` }, tabs => {
+      tabs.forEach(tab => chrome.tabs.reload(tab.id));
+
+      // See if there's any active non-homepage StyleURL tabs and set it to active
+      // Basically we want to ignore / and all of the root routes
+      // We _do_ want "/news.ycombinator.com/long_gist_id"
+      const styleURLTab = tabs.find(
+        tab =>
+          `${__FRONTEND_HOST__}/`.split("/").length < tab.url.split("/").length
+      );
+      // Also set it to active
+      if (styleURLTab) {
+        chrome.tabs.update(styleURLTab.id, { active: true });
+      }
+    });
+  });
 });

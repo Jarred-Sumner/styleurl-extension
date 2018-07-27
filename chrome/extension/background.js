@@ -583,4 +583,10 @@ Raven.context(function() {
     PORT_TYPES.inline_style_observer,
     handleInlineStyleObserverMessages
   );
+
+  chrome.runtime.onInstalled.addListener(() => {
+    chrome.tabs.query({ url: `${__FRONTEND_HOST__}/*` }, tabs => {
+      tabs.forEach(tab => chrome.tabs.reload(tab.id));
+    });
+  });
 });

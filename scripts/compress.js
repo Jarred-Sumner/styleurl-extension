@@ -23,9 +23,33 @@ crx
   .then(async archiveBuffer => {
     const baseName = `${name}-${version}-${new Date().toISOString()}`;
     const zipFileName = path.join(RELEASES_PATH, `${baseName}.zip`);
-    fs.writeFile(zipFileName, archiveBuffer, () =>
-      console.log(`Wrote ${zipFileName}`)
-    );
+    fs.writeFile(zipFileName, archiveBuffer, () => {
+      console.log(`Wrote ${zipFileName}`);
+
+      const CREDENTIALS_PATH = path.join(__dirname, "../credentials.json");
+      if (fs.existsSync(CREDENTIALS_PATH) && !!argv["release"]) {
+        console.log("Uploading to Chrome Store...");
+        const webStore = require("chrome-webstore-upload")({
+          ...require(CREDENTIALS_PATH),
+          extensionId: "emplcligcppnlalfjknjbanolhlnkmgp"
+        });
+
+        webStore
+          .fetchToken()
+          .then(token => {
+            return webStore
+              .uploadExisting(fs.createReadStream(zipFileName), token)
+              .then(res => {
+                console.log("Uploaded to Chrome Store...Publishing");
+                return webStore.publish("default", token);
+              })
+              .then(() =>
+                console.log(`Published ${version} to Chrome Store successfully`)
+              );
+          })
+          .catch(err => console.error(err));
+      }
+    });
 
     return crx.pack(archiveBuffer).then(async crxBuffer => {
       const crxFilename = path.join(RELEASES_PATH, `${baseName}.crx`);

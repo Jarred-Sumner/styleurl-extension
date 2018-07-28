@@ -4,7 +4,11 @@ import SyntaxHighlighter from "react-syntax-highlighter";
 import { monokai } from "react-syntax-highlighter/styles/hljs";
 import filenameify from "filenamify";
 
-const normalizeFilename = filename => {
+const normalizeFilename = _filename => {
+  const queryStringIndex = _filename.indexOf("?");
+  const filename =
+    queryStringIndex > -1 ? _filename.substr(0, queryStringIndex) : _filename;
+
   if (!filename.endsWith(".css")) {
     return filenameify(filename + ".css", {
       replacement: "_"

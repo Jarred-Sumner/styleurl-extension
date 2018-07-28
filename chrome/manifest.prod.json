@@ -1,0 +1,54 @@
+{
+  "version": "1.0.6",
+  "name": "StyleURL",
+  "manifest_version": 2,
+  "description": "StyleURL lets you export and share CSS tweaks instantly.",
+  "browser_action": {},
+  "devtools_page": "devtools.html",
+  "icons": {
+    "16": "img/default_16x16.png",
+    "48": "img/default_48x48.png",
+    "128": "img/default_128x128.png"
+  },
+  "background": {
+    "page": "background.html"
+  },
+  "web_accessible_resources": [
+    "create_styleurl.html",
+    "inject.html",
+    "*.js",
+    "*.css",
+    "img/*.png"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://gist.github.com/*/*"],
+      "js": ["github_gist_content_script.bundle.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": [
+        "https://api.styleurl.app/*",
+        "https://styleurl.app/*",
+        "https://www.styleurl.app/*"
+      ],
+      "js": ["version_info.bundle.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["inline_style_observer.bundle.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "permissions": [
+    "tabs",
+    "<all_urls>",
+    "webNavigation",
+    "storage",
+    "clipboardWrite",
+    "notifications"
+  ],
+  "content_security_policy":
+    "default-src 'self'; script-src 'self' https://gist.github.com 'unsafe-eval'; connect-src https://sentry.io https://gist.github.com https://gist.githubusercontent.com https://s3-us-west-2.amazonaws.com https://api.github.com data: https://styleurlapp.s3-us-west-2.amazonaws.com https://styleurlapp.s3.us-west-2.amazonaws.com https://api.styleurl.app https://www.styleurl.app https://styleurl.app; style-src * 'unsafe-inline' 'self' blob:; img-src 'self' data:; font-src 'self' data:;"
+}

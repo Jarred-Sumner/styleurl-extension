@@ -1,0 +1,24 @@
+.CodeDiff {
+    width: 320px;
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: 240px;
+}
+
+.CodeDiff pre {
+    margin: 0;
+    padding: 14px 14px !important;
+}
+
+.CodeDiff pre code:nth-child(1) {
+    padding-right: 14px !important;
+}
+
+.react-syntax-highlighter-line-number {
+    user-select: none;
+}
+
+.CodeDiff > pre {
+    background: #21262F !important;
+}

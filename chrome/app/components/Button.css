@@ -1,0 +1,62 @@
+.Button {
+    display: flex;
+    align-items: center;
+    border-radius: 4px;
+    margin: 8px 0;
+    cursor: pointer;
+    width: auto;
+}
+
+a.Button {
+    text-decoration: underline;
+}
+
+.Button-text {
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 18px;
+    user-select: none;
+}
+
+.Button--size-default {
+    padding: 6px 14px;
+}
+
+a.Button--color-blue,
+.Button--color-blue {
+    color: white;
+    background-color: #5A95FF;
+}
+
+.Button--color-blue .Button-text {
+    color: white;
+}
+
+.Button--color-black,
+a.Button--color-black {
+    color: white;
+    background-color: #13161B;
+}
+
+.Button--color-black .Button-text {
+    color: white;
+}
+
+.Button--color-black:hover {
+    filter: invert(5%);
+}
+
+.Button--color-default {
+    color: white;
+    background-color: transparent;
+}
+
+.Button-icon,
+.Button-icon svg {
+    height: 20px;
+    width: 20px;
+}
+
+.Button-icon {
+    margin-right: 4px;
+}

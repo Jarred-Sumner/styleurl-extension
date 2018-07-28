@@ -1,0 +1,8 @@
+key.pem
+node_modules
+dev
+dist
+build
+build.zip
+credentials.json
+releases

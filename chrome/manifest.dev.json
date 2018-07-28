@@ -1,0 +1,59 @@
+{
+  "version": "1.0.0",
+  "name": "StyleURL (Development)",
+  "manifest_version": 2,
+  "description":
+    "Publish CSS changes you made in Chrome Inspector to other people",
+  "browser_action": {},
+  "devtools_page": "devtools.html",
+  "icons": {
+    "16": "img/default_16x16.png",
+    "48": "img/default_48x48.png",
+    "128": "img/default_128x128.png"
+  },
+  "web_accessible_resources": [
+    "create_styleurl.html",
+    "inject.html",
+    "*.js",
+    "*.css",
+    "img/*.png"
+  ],
+  "background": {
+    "page": "background.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://gist.github.com/*/*"],
+      "js": ["github_gist_content_script.bundle.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": [
+        "http://localhost:3000/*",
+        "http://localhost:3001/*",
+        "http://localhost:3002/*",
+        "https://api.styleurl.app/*",
+        "https://styleurl.app/*",
+        "https://www.styleurl.app/*",
+        "https://styleurl.app/*"
+      ],
+      "js": ["version_info.bundle.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["inline_style_observer.bundle.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "permissions": [
+    "tabs",
+    "<all_urls>",
+    "webNavigation",
+    "storage",
+    "clipboardWrite",
+    "notifications"
+  ],
+  "content_security_policy":
+    "default-src 'self'; script-src 'self' https://gist.github.com http://localhost:3000 https://localhost:3000 'unsafe-eval'; connect-src https://sentry.io https://gist.github.com https://gist.githubusercontent.com http://localhost:3000 https://s3-us-west-2.amazonaws.com https://api.github.com data: https://styleurlapp.s3-us-west-2.amazonaws.com https://styleurlapp.s3.us-west-2.amazonaws.com http://localhost:3001 http://localhost:3002 https://localhost:3000; style-src * 'unsafe-inline' 'self' blob:; img-src 'self' data:; font-src 'self' data: http://localhost:3000;"
+}

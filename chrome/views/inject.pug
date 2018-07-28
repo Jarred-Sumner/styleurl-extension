@@ -1,0 +1,13 @@
+doctype html
+
+html
+  head
+    meta(charset='UTF-8')
+    title Redux TodoMVC Example (Inject)
+    style.
+      html, body {
+        background-color: rgba(0,0,0,0)
+      }
+  body
+    #root
+    script(src=env == 'prod' ? '/todoapp.bundle.js' : 'https://localhost:3000/todoapp.bundle.js')

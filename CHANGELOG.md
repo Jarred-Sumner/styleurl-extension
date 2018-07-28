@@ -1,3 +1,7 @@
+## 1.0.7
+
+Performance improvements and bug fixes
+
 ## 1.0.6
 
 Bump version.

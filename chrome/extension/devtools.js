@@ -1,8 +1,7 @@
-import _ from "lodash";
-import Hashes from "jshashes";
-import { portName, MESSAGE_TYPES, PORT_TYPES } from "./lib/port";
 import Messenger from "chrome-ext-messenger";
-import convertObj from "cssobj-converter";
+import Hashes from "jshashes";
+import _ from "lodash";
+import { MESSAGE_TYPES, PORT_TYPES } from "./lib/port";
 const messenger = new Messenger();
 const SHA256 = new Hashes.SHA256();
 

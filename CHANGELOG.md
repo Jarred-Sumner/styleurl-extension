@@ -1,3 +1,7 @@
+## 1.1.0
+
+Improve performance of memoizer slightly
+
 ## 1.0.9
 
 Fix issue where stylesheets after page changes on the same tab were being diffed. For example, you'd open Hacker News, edit some styles, click on a link to a page, then it would show all the Hacker News styles being `unset`.

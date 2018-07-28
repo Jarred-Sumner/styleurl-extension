@@ -13,7 +13,7 @@ import {
   PORT_TYPES
 } from "./lib/port";
 import { shouldApplyStyleToURL } from "./lib/stylefile";
-import diffSheet from "stylesheet-differ";
+import _diffSheet from "stylesheet-differ";
 import Messenger from "chrome-ext-messenger";
 import { toFile } from "./lib/toFile";
 import {
@@ -44,6 +44,8 @@ import {
 } from "./lib/StyleURLTab";
 import Raven from "raven-js";
 
+const diffSheet = _.memoize(_diffSheet);
+
 Raven.config(
   "https://26483721d124446bb37ebe913d3b8347@sentry.io/1246693"
 ).install();
@@ -70,6 +72,7 @@ Raven.context(function() {
         tabId &&
         !styleURLsForTabId(tabId).length
       ) {
+        diffSheet.cache = new _.memoize.Cache();
         inlineStyleObserverConnection.sendMessage(
           `content_script:${PORT_TYPES.inline_style_observer}:${tabId}`,
           {
@@ -408,17 +411,19 @@ Raven.context(function() {
 
         const WARNING_COMMENT = `/* These changes are from inline styles, so the selectors might be a litttle crazy and if the page does lots of inline styles, unrelated changes could show up here. */`;
 
+        const content = old_stylesheet
+          ? diffSheet(old_stylesheet.content, new_stylesheet.content)
+          : new_stylesheet.content;
+
         return {
           url: new_stylesheet.url,
-          content: `${WARNING_COMMENT}\n${diffSheet(
-            old_stylesheet ? old_stylesheet.content : "",
-            new_stylesheet.content
-          )}`
+          content: `${WARNING_COMMENT}\n${content}`
         };
       });
   };
 
   const getCurrentStylesheetsDiff = tabId => {
+    console.time("Diff All Sheets");
     return devtoolConnection
       .sendMessage(`devtool:${PORT_TYPES.devtool_widget}:${tabId}`, {
         kind: MESSAGE_TYPES.get_current_styles_diff
@@ -434,10 +439,13 @@ Raven.context(function() {
               const newStyle = currentStyles.find(
                 style => style.url === oldStyle.url
               );
+
+              console.time("Diff Sheet [No Memoize]");
               const diffedStyle = diffSheet(
                 oldStyle ? oldStyle.content || "" : "",
                 newStyle ? newStyle.content || "" : ""
               );
+              console.timeEnd("Diff Sheet [No Memoize]");
 
               if (diffedStyle && diffedStyle.trim().length > 0) {
                 modifiedSheets.push({
@@ -450,11 +458,17 @@ Raven.context(function() {
 
           TAB_IDS_STYLESHEET_DIFFS[tabId] = modifiedSheets;
 
-          const fauxInlineStylesheet = await getInlineStylesDiff(tabId);
+          try {
+            const fauxInlineStylesheet = await getInlineStylesDiff(tabId);
 
-          if (fauxInlineStylesheet) {
-            modifiedSheets.push(fauxInlineStylesheet);
+            if (fauxInlineStylesheet) {
+              modifiedSheets.push(fauxInlineStylesheet);
+            }
+          } catch (exception) {
+            console.error(exception);
           }
+
+          console.timeEnd("Diff All Sheets");
 
           return {
             stylesheets: modifiedSheets

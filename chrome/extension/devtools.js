@@ -118,7 +118,7 @@ const getGeneralStyles = () =>
     Promise.all([getStyleTags(), getLoadedSheets()]).then(allStyles => {
       const filteredStyles = _
         .compact(_.flatten(allStyles))
-        .map(({ content, url }) => ({ url, content: convertObj(content) }));
+        .map(({ content, url }) => ({ url, content: content }));
       return resolve(filteredStyles);
     });
   });

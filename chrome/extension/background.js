@@ -45,7 +45,10 @@ import {
 import Raven from "raven-js";
 import memoizee from "memoizee";
 
-const diffSheet = memoizee(_diffSheet, { maxAge: 300000 });
+const diffSheet = memoizee(_diffSheet, {
+  maxAge: 300000, // 5 minutes,
+  primitive: true
+});
 
 Raven.config(
   "https://26483721d124446bb37ebe913d3b8347@sentry.io/1246693"

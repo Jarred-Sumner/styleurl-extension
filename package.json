@@ -12,7 +12,7 @@
     "lint": "eslint app chrome test scripts webpack/*.js",
     "test-e2e": "cross-env NODE_ENV=test mocha -r ./test/setup-app test/e2e",
     "test": "cross-env NODE_ENV=test mocha -r ./test/setup-app test/app",
-    "release": "yarn build && yarn compress --release"
+    "release": "yarn && yarn build && yarn compress --release"
   },
   "repository": {
     "type": "git",

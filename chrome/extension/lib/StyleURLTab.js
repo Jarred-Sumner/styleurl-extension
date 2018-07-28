@@ -110,7 +110,7 @@ export const startMonitoringTabID = async ({ tabId, gistId }) => {
 };
 
 export const stopMonitoringTabID = tabId => {
-  if (TAB_IDS_TO_STYLEURL[tabId].length === 0) {
+  if (TAB_IDS_TO_STYLEURL[tabId] && TAB_IDS_TO_STYLEURL[tabId].length === 0) {
     delete TAB_IDS_TO_STYLEURL[tabId];
   }
 };

@@ -6,9 +6,13 @@ import filenameify from "filenamify";
 
 const normalizeFilename = filename => {
   if (!filename.endsWith(".css")) {
-    return filenameify(filename + ".css");
+    return filenameify(filename + ".css", {
+      replacement: "_"
+    });
   } else {
-    return filenameify(filename);
+    return filenameify(filename, {
+      replacement: "_"
+    });
   }
 };
 

@@ -1,49 +1,34 @@
-import _ from "lodash";
-import {
-  applyStyleURLToTabID,
-  getGistById,
-  getGistIDFromURL,
-  loadStylefileFromGist,
-  SPECIAL_QUERY_PARAMS
-} from "./lib/gists";
-import {
-  MESSAGE_TYPES,
-  portName,
-  tabIdFromPortName,
-  PORT_TYPES
-} from "./lib/port";
-import { shouldApplyStyleToURL } from "./lib/stylefile";
-import _diffSheet from "stylesheet-differ";
 import Messenger from "chrome-ext-messenger";
-import { toFile } from "./lib/toFile";
-import {
-  uploadStylesheets,
-  uploadScreenshot,
-  SCREENSHOT_CONTENT_TYPE
-} from "./lib/api";
-import injectScriptNames from "./lib/injectScriptNames";
-import {
-  setBrowserActionToDefault,
-  setBrowserActionToUploadStyle,
-  setBrowserActionToStyleApplied,
-  getBrowserActionState,
-  BROWSER_ACTION_STATES,
-  DEFAULT_ICON_PATH
-} from "./lib/browserAction";
+import _ from "lodash";
+import memoizee from "memoizee";
+import Raven from "raven-js";
+import _diffSheet from "stylesheet-differ";
 import {
   injectCreateStyleURLBar,
-  injectViewStyleURLBar,
   injectCSSManager,
-  injectInlineStyleObserver
+  injectViewStyleURLBar
 } from "./background/inject";
 import {
-  StyleURLTab,
-  styleURLsForTabId,
-  stopMonitoringTabID,
-  startMonitoringTabID
+  SCREENSHOT_CONTENT_TYPE,
+  uploadScreenshot,
+  uploadStylesheets
+} from "./lib/api";
+import {
+  BROWSER_ACTION_STATES,
+  DEFAULT_ICON_PATH,
+  getBrowserActionState,
+  setBrowserActionToDefault,
+  setBrowserActionToStyleApplied
+} from "./lib/browserAction";
+import { getGistIDFromURL, SPECIAL_QUERY_PARAMS } from "./lib/gists";
+import injectScriptNames from "./lib/injectScriptNames";
+import { MESSAGE_TYPES, PORT_TYPES } from "./lib/port";
+import {
+  startMonitoringTabID,
+  stopMonitoringTabID as _stopMonitoringTabID,
+  styleURLsForTabId
 } from "./lib/StyleURLTab";
-import Raven from "raven-js";
-import memoizee from "memoizee";
+import { toFile } from "./lib/toFile";
 
 const diffSheet = memoizee(_diffSheet, {
   maxAge: 300000, // 5 minutes,
@@ -93,6 +78,15 @@ Raven.context(function() {
   const TAB_IDS_STYLESHEET_DIFFS = {};
   const TAB_ORIGINAL_STYLES = {};
   const LAST_RECEIVED_TAB_ORIGINAL_STYLES = {};
+
+  const stopMonitoringTabID = tabId => {
+    _stopMonitoringTabID(tabId);
+
+    delete TAB_IDS_STYLESHEET_DIFFS[tabId];
+    delete TAB_ORIGINAL_STYLES[tabId];
+    delete TAB_ORIGINAL_STYLES[tabId];
+    delete LAST_RECEIVED_TAB_ORIGINAL_STYLES[tabId];
+  };
 
   const getTab = tabId =>
     new Promise((resolve, reject) => {
@@ -412,15 +406,13 @@ Raven.context(function() {
           return null;
         }
 
-        const WARNING_COMMENT = `/* These changes are from inline styles, so the selectors might be a litttle crazy and if the page does lots of inline styles, unrelated changes could show up here. */`;
-
         const content = old_stylesheet
           ? diffSheet(old_stylesheet.content, new_stylesheet.content)
           : new_stylesheet.content;
 
         return {
           url: new_stylesheet.url,
-          content: `${WARNING_COMMENT}\n${content}`
+          content
         };
       });
   };
@@ -533,6 +525,9 @@ Raven.context(function() {
     }
   };
 
+  chrome.webNavigation.onCommitted.addListener(tab =>
+    stopMonitoringTabID(tab.tabId)
+  );
   chrome.webNavigation.onCommitted.addListener(autoInsertCSS);
   chrome.webNavigation.onHistoryStateUpdated.addListener(({ tabId, url }) =>
     autodetectStyleURL({ url, tabId })

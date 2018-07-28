@@ -1,6 +1,6 @@
 {
   "name": "styleurl-extension",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "description": "StyleURL Chrome extension",
   "private": true,
   "scripts": {
@@ -107,7 +107,7 @@
     "redux-thunk": "^2.0.1",
     "reset-css": "^4.0.1",
     "sticky-js": "^1.2.0",
-    "stylesheet-differ": "^0.0.9",
+    "stylesheet-differ": "^0.0.10",
     "url-parse": "^1.4.1",
     "url-pattern": "^1.0.3"
   }

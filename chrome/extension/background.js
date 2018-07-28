@@ -43,8 +43,9 @@ import {
   startMonitoringTabID
 } from "./lib/StyleURLTab";
 import Raven from "raven-js";
+import memoizee from "memoizee";
 
-const diffSheet = _.memoize(_diffSheet);
+const diffSheet = memoizee(_diffSheet, { maxAge: 300000 });
 
 Raven.config(
   "https://26483721d124446bb37ebe913d3b8347@sentry.io/1246693"
@@ -72,7 +73,6 @@ Raven.context(function() {
         tabId &&
         !styleURLsForTabId(tabId).length
       ) {
-        diffSheet.cache = new _.memoize.Cache();
         inlineStyleObserverConnection.sendMessage(
           `content_script:${PORT_TYPES.inline_style_observer}:${tabId}`,
           {

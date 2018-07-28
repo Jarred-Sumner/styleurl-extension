@@ -245,7 +245,7 @@ const contentStyleListener = resource => {
 };
 
 chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(
-  _.debounce(contentStyleListener, 300)
+  _.debounce(contentStyleListener, 150)
 );
 setupConnection();
 

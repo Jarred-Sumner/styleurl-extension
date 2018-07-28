@@ -90,6 +90,7 @@
     "js-yaml": "^3.12.0",
     "jshashes": "^1.0.7",
     "lodash": "^4.17.10",
+    "memoizee": "^0.4.12",
     "optimal-select": "^4.0.1",
     "postcss-cssnext": "^3.1.0",
     "postcss-import": "^11.1.0",

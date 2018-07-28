@@ -2,7 +2,7 @@ import _ from "lodash";
 import Hashes from "jshashes";
 import { portName, MESSAGE_TYPES, PORT_TYPES } from "./lib/port";
 import Messenger from "chrome-ext-messenger";
-
+import convertObj from "cssobj-converter";
 const messenger = new Messenger();
 const SHA256 = new Hashes.SHA256();
 
@@ -118,8 +118,7 @@ const getGeneralStyles = () =>
     Promise.all([getStyleTags(), getLoadedSheets()]).then(allStyles => {
       const filteredStyles = _
         .compact(_.flatten(allStyles))
-        .filter(o => !_.isEmpty(o));
-
+        .map(({ content, url }) => ({ url, content: convertObj(content) }));
       return resolve(filteredStyles);
     });
   });

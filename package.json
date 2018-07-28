@@ -79,6 +79,7 @@
     "chrome-ext-messenger": "^2.0.12",
     "classnames": "^2.2.6",
     "core-js": "^2.5.7",
+    "cssobj-converter": "^2.3.3",
     "data-uri-to-blob": "^0.0.4",
     "diff-match-patch": "^1.0.1",
     "filenamify": "^2.1.0",

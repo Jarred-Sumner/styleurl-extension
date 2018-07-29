@@ -25,23 +25,16 @@ const buildEditURL = gistId => {
   return `${__API_HOST__}/api/gists/edit/${gistId}`;
 };
 
-const copyToClipboard = text => {
-  const input = document.createElement("input");
-  document.body.appendChild(input);
+function copyToClipboard(text) {
+  const input = document.createElement("textarea");
+  input.style.position = "fixed";
+  input.style.opacity = 0;
   input.value = text;
-  input.focus();
-  input.style.visibility = "hidden";
+  document.body.appendChild(input);
   input.select();
-  const result = document.execCommand("copy");
-
-  if (result === "unsuccessful") {
-    console.error("Failed to copy text.");
-  }
-
+  document.execCommand("Copy");
   document.body.removeChild(input);
-
-  return result !== "unsuccessful";
-};
+}
 
 class CreateStyleURL extends React.PureComponent {
   state = {
@@ -228,37 +221,36 @@ class CreateStyleURLContainer extends React.Component {
           stylesheets,
           visibility: "public"
         }
-      }).then(response => {
-        if (
-          response &&
-          response.success &&
-          response.data.visibility === "publicly_visible"
-        ) {
-          const shareURL = response.data.share_url;
+      })
+        .then(response => {
+          if (
+            response &&
+            response.success &&
+            response.data.visibility === "publicly_visible"
+          ) {
+            const shareURL = response.data.share_url;
 
-          this.setState({ shareURL }, () => {
-            navigator.clipboard.writeText(shareURL).then(
-              () => {
-                this._sendMessage({
-                  kind: MESSAGE_TYPES.send_success_notification,
-                  value: {
-                    didCopy: true
-                  }
-                });
-              },
-              () =>
-                this._sendMessage({
-                  kind: MESSAGE_TYPES.send_success_notification,
-                  value: {
-                    didCopy: false
-                  }
-                })
-            );
+            this.setState({ shareURL });
+            window.open(shareURL, "_blank");
+            return shareURL;
+          }
+
+          return null;
+        })
+        .then(shareURL => {
+          if (!shareURL) {
+            return;
+          }
+
+          copyToClipboard(shareURL);
+
+          this._sendMessage({
+            kind: MESSAGE_TYPES.send_success_notification,
+            value: {
+              didCopy: true
+            }
           });
-
-          window.open(response.data.url, "_blank");
-        }
-      });
+        });
     });
   };
 

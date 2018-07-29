@@ -1,3 +1,7 @@
+## 1.1.1
+
+Remove query string from exported filenames because that's usually just a way to deal with caching and not how filenames are in the filesystem.
+
 ## 1.1.0
 
 Improve performance of memoizer slightly

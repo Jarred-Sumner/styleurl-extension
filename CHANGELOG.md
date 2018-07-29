@@ -1,3 +1,7 @@
+## 1.1.2
+
+Remove console.\*(^[error|log]) in production
+
 ## 1.1.1
 
 Remove query string from exported filenames because that's usually just a way to deal with caching and not how filenames are in the filesystem.

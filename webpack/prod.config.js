@@ -82,6 +82,7 @@ module.exports = {
     ],
     nodeEnv: "production"
   },
+  mode: "production",
   plugins: [
     new webpack.optimize.OccurrenceOrderPlugin(),
     new webpack.IgnorePlugin(/[^/]+\/[\S]+.dev$/),

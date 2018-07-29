@@ -1,3 +1,7 @@
+## 1.1.4
+
+Fix bug caused in 1.1.3 where the redirect URL was the share URL
+
 ## 1.1.3
 
 Fix "Share changes" button on HTTP-only sites

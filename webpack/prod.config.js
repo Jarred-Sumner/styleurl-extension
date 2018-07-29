@@ -127,7 +127,8 @@ module.exports = {
                 {
                   root: [path.join(__dirname, "../chrome")]
                 }
-              ]
+              ],
+              ["transform-remove-console", { exclude: ["error", "warn"] }]
             ],
             presets: [
               "@babel/preset-react",

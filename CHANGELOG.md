@@ -1,3 +1,7 @@
+## 1.1.3
+
+Fix "Share changes" button on HTTP-only sites
+
 ## 1.1.2
 
 Remove console.\*(^[error|log]) in production

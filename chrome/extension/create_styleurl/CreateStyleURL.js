@@ -231,7 +231,7 @@ class CreateStyleURLContainer extends React.Component {
             const shareURL = response.data.share_url;
 
             this.setState({ shareURL });
-            window.open(shareURL, "_blank");
+            window.open(response.data.url, "_blank");
             return shareURL;
           }
 

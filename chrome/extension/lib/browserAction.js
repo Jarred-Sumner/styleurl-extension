@@ -23,43 +23,38 @@ export const BROWSER_ACTION_STATES = {
 let BROWSER_ACTION_STATE = BROWSER_ACTION_STATES.default;
 
 export const setBrowserActionToDefault = ({ tabId }) => {
-  chrome.browserAction.setIcon({
-    tabId,
-    path: DEFAULT_ICON_PATH
-  });
-  chrome.browserAction.setTitle({
-    tabId,
-    title: "StyleURL"
-  });
+  try {
+    chrome.browserAction.setIcon({
+      tabId,
+      path: DEFAULT_ICON_PATH
+    });
+    chrome.browserAction.setTitle({
+      tabId,
+      title: "StyleURL"
+    });
 
-  BROWSER_ACTION_STATE = BROWSER_ACTION_STATES.default;
+    BROWSER_ACTION_STATE = BROWSER_ACTION_STATES.default;
+  } catch (exception) {
+    console.error(exception);
+  }
 };
 
 export const setBrowserActionToStyleApplied = ({ styleCount, tabId }) => {
-  chrome.browserAction.setIcon({
-    tabId,
-    path: DEFAULT_ICON_PATH
-  });
+  try {
+    chrome.browserAction.setIcon({
+      tabId,
+      path: DEFAULT_ICON_PATH
+    });
 
-  chrome.browserAction.setBadgeText({
-    text: `${styleCount}`,
-    tabId: tabId
-  });
+    chrome.browserAction.setBadgeText({
+      text: `${styleCount}`,
+      tabId: tabId
+    });
 
-  BROWSER_ACTION_STATE = BROWSER_ACTION_STATES.style_applied;
-};
-
-export const setBrowserActionToUploadStyle = ({ tabId }) => {
-  chrome.browserAction.setIcon({
-    tabId,
-    path: PLUS_IMAGE_PATH
-  });
-  chrome.browserAction.setTitle({
-    tabId,
-    title: "Export CSS changes to Gist with StyleURL"
-  });
-
-  BROWSER_ACTION_STATE = BROWSER_ACTION_STATES.upload_style;
+    BROWSER_ACTION_STATE = BROWSER_ACTION_STATES.style_applied;
+  } catch (exception) {
+    console.error(exception);
+  }
 };
 
 export const getBrowserActionState = () => BROWSER_ACTION_STATE;

@@ -54,11 +54,6 @@ class ViewStyleURL extends React.PureComponent {
         }
       >
         <Dropdown
-          icon={<Icon width={"18"} height="15" name="fork" />}
-          onClick={this.handleOpenFork}
-          title="Fork"
-        />
-        <Dropdown
           icon={<Icon width={"32"} height="15" name="code" />}
           title="Code"
         >

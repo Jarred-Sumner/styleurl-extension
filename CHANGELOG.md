@@ -1,3 +1,7 @@
+## 1.1.5
+
+Ignore error causd by tab to not exist when resetting browserAction. This caused other things to break, and is a safe error to silence (famous last words)
+
 ## 1.1.4
 
 Fix bug caused in 1.1.3 where the redirect URL was the share URL

@@ -1,3 +1,8 @@
+## 1.1.7
+
+- Hide Intercom **only** when the StyleURL bar is visible in the page because it covers up StyleURL and, for now, it's easier to forcefully hide it than to move it to be above the bar. TODO: observe for the `#intercom-container` selector instead of inserting a style tag when bar appears
+- Add a spacer div to handle a good amount of cases where the bottom of screen is covered up by StyleURL. This won't fix every case, particularly websites like Facebook where the bottom of the screen is something else that's floaty
+
 ## 1.1.6
 
 - Add "Share StyleURL" link to GitHub Gist

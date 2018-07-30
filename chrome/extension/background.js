@@ -40,6 +40,7 @@ Raven.config(
 ).install();
 
 Raven.context(function() {
+  let DEVTOOLS_OPEN_TABS = {};
   let devtoolConnection;
   let gistConnection;
   let stylesheetManagerConnection;
@@ -48,12 +49,21 @@ Raven.context(function() {
   const messenger = new Messenger();
 
   messenger.initBackgroundHub({
+    connectedHandler: function(extensionPart, connectionName, tabId) {
+      if (extensionPart === "devtool") {
+        DEVTOOLS_OPEN_TABS[tabId] = true;
+      }
+    },
     disconnectedHandler: function(extensionPart, connectionName, tabId) {
       if (
         extensionPart === "devtool" &&
         getBrowserActionState() === BROWSER_ACTION_STATES.upload_style
       ) {
         setBrowserActionToDefault({ tabId });
+      }
+
+      if (extensionPart === "devtool") {
+        DEVTOOLS_OPEN_TABS[tabId] = false;
       }
 
       if (
@@ -262,6 +272,19 @@ Raven.context(function() {
 
     if (kind === kinds.log) {
     } else if (kind === kinds.get_current_styles_diff) {
+      if (
+        !DEVTOOLS_OPEN_TABS[tabId] &&
+        request.value &&
+        request.value.devtools_required
+      ) {
+        inlineHeaderConnection.sendMessage(
+          `content_script:${PORT_TYPES.inline_header}:${tabId}`,
+          {
+            kind: MESSAGE_TYPES.open_devtools_plz
+          }
+        );
+      }
+
       getCurrentStylesheetsDiff(tabId).then(response => sendResponse(response));
     } else if (kind === kinds.send_success_notification) {
       chrome.notifications.create({
@@ -430,25 +453,31 @@ Raven.context(function() {
           const currentStyles = response.value.general_stylesheets;
           const oldStyles = TAB_ORIGINAL_STYLES[tabId];
           if (oldStyles) {
-            oldStyles.forEach(oldStyle => {
-              const newStyle = currentStyles.find(
-                style => style.url === oldStyle.url
-              );
+            oldStyles
+              .filter(
+                style =>
+                  style.url &&
+                  style.url.indexOf("inject_create_styleurl.css") === -1 // this comes up ugh
+              )
+              .forEach(oldStyle => {
+                const newStyle = currentStyles.find(
+                  style => style.url === oldStyle.url
+                );
 
-              console.time("Diff Sheet [No Memoize]");
-              const diffedStyle = diffSheet(
-                oldStyle ? oldStyle.content || "" : "",
-                newStyle ? newStyle.content || "" : ""
-              );
-              console.timeEnd("Diff Sheet [No Memoize]");
+                console.time("Diff Sheet [No Memoize]");
+                const diffedStyle = diffSheet(
+                  oldStyle ? oldStyle.content || "" : "",
+                  newStyle ? newStyle.content || "" : ""
+                );
+                console.timeEnd("Diff Sheet [No Memoize]");
 
-              if (diffedStyle && diffedStyle.trim().length > 0) {
-                modifiedSheets.push({
-                  url: oldStyle.url,
-                  content: diffedStyle
-                });
-              }
-            });
+                if (diffedStyle && diffedStyle.trim().length > 0) {
+                  modifiedSheets.push({
+                    url: oldStyle.url,
+                    content: diffedStyle
+                  });
+                }
+              });
           }
 
           TAB_IDS_STYLESHEET_DIFFS[tabId] = modifiedSheets;
@@ -571,6 +600,10 @@ Raven.context(function() {
   chrome.tabs.onRemoved.addListener(tabId => {
     if (TAB_IDS_TO_APPLY_STYLES[tabId]) {
       stopMonitoringTabID(tabId);
+    }
+
+    if (DEVTOOLS_OPEN_TABS[tabId]) {
+      DEVTOOLS_OPEN_TABS[tabId] = false;
     }
   });
 

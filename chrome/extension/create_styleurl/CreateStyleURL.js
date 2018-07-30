@@ -146,6 +146,10 @@ class CreateStyleURLContainer extends React.Component {
     const { kind = null } = request;
     if (kind === kinds.style_diff_changed) {
       this.syncStylesheets();
+    } else if (kind === kinds.open_devtools_plz) {
+      alert(
+        "Please open Chrome Devtools and try again -- ⋮ -> More Tools -> Developer Tools"
+      );
     }
   };
 
@@ -185,7 +189,10 @@ class CreateStyleURLContainer extends React.Component {
 
   handleExport = async () => {
     const { stylesheets } = await this._sendMessage({
-      kind: MESSAGE_TYPES.get_current_styles_diff
+      kind: MESSAGE_TYPES.get_current_styles_diff,
+      value: {
+        devtools_required: true
+      }
     });
 
     if (!stylesheets || !stylesheets.length) {
@@ -208,7 +215,10 @@ class CreateStyleURLContainer extends React.Component {
 
   handleShareChanges = () => {
     return this._sendMessage({
-      kind: MESSAGE_TYPES.get_current_styles_diff
+      kind: MESSAGE_TYPES.get_current_styles_diff,
+      value: {
+        devtools_required: true
+      }
     }).then(({ stylesheets }) => {
       if (!stylesheets || !stylesheets.length) {
         alert("Please make some CSS changes and try again");

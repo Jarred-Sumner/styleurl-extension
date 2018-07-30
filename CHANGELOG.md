@@ -1,3 +1,7 @@
+# 1.1.8
+
+Bump version of `stylesheet-differ`. This fixes some bugs people were experiencing when viewing the diff.
+
 ## 1.1.7
 
 - Hide Intercom **only** when the StyleURL bar is visible in the page because it covers up StyleURL and, for now, it's easier to forcefully hide it than to move it to be above the bar. TODO: observe for the `#intercom-container` selector instead of inserting a style tag when bar appears

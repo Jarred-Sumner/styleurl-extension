@@ -1,4 +1,4 @@
-# 1.1.8
+## 1.1.8
 
 Bump version of `stylesheet-differ`. This fixes some bugs people were experiencing when viewing the diff.
 

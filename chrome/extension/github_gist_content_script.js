@@ -13,6 +13,10 @@ const connection = messenger.initConnection(PORT_TYPES.github_gist);
 
 const getGistID = () => window.location.pathname.split("/")[2];
 
+const buildShareURL = (stylefile, gistID) => {
+  return `${__FRONTEND_HOST__}/${stylefile.domains[0]}/${gistID}`;
+};
+
 const buildStyleURL = styleFile => {
   const originalURL = styleFile.redirect_url;
 
@@ -29,7 +33,7 @@ const buildStyleURL = styleFile => {
 const log = (...messages) =>
   console.log.apply(console, ["[StyleURL]", ...messages]);
 
-const renderStyleURLBar = styleFile => {
+const renderStyleURLBar = (styleFile, gistID) => {
   log("Detected Stylefile", styleFile);
 
   const div = document.createElement("div");
@@ -38,7 +42,14 @@ const renderStyleURLBar = styleFile => {
     styleFile.domains[0]
   }</strong>?</div>
 
+  <div style="display: flex; align-items: center;">
+  <a href="${buildShareURL(
+    styleFile,
+    gistID
+  )}" class="btn-link" style="color: white; margin-right: 14px; font-weight: bold; text-decoration: underline;">Share StyleURL</a>
   <a href="${buildStyleURL(styleFile)}" class="btn">Apply StyleURL</a>
+
+  </div>
 </div></div></div>`;
   document.body.prepend(div);
 };
@@ -132,7 +143,7 @@ if (isGistPage(location.pathname)) {
           return;
         }
 
-        renderStyleURLBar(styleFile);
+        renderStyleURLBar(styleFile, getGistID());
       });
   });
 }

@@ -20,6 +20,10 @@ export const makeAllRulesImportant = styleElement => {
   for (let i = 0; i < stylesheet.rules.length; i++) {
     const rule = stylesheet.rules[i];
 
+    if (!rule.style) {
+      continue;
+    }
+
     for (let k = 0; k < rule.style.length; k++) {
       const declarationName = rule.style[k];
       const value = rule.style.getPropertyValue(declarationName);

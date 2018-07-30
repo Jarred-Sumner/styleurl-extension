@@ -7782,15 +7782,14 @@ style-loader@^0.13.1:
   dependencies:
     loader-utils "^1.0.2"
 
-stylesheet-differ@^0.0.10:
-  version "0.0.10"
-  resolved "https://registry.yarnpkg.com/stylesheet-differ/-/stylesheet-differ-0.0.10.tgz#6cbd3cd0bfe2835ea8afdd1dd51632f5deb584a9"
+stylesheet-differ@^0.0.21:
+  version "0.0.21"
+  resolved "https://registry.yarnpkg.com/stylesheet-differ/-/stylesheet-differ-0.0.21.tgz#658ee0d066ec138dd6e6a892b74e9b5d9ee6d2a2"
   dependencies:
     cssobj "^1.3.6"
     cssobj-converter "^2.3.3"
     cssobj-core "^1.1.9"
     cssobj-plugin-gencss "^2.0.7"
-    lodash "^4.17.10"
 
 supports-color@3.1.2:
   version "3.1.2"

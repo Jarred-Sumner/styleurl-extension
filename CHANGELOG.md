@@ -1,3 +1,8 @@
+## 1.1.6
+
+- Add "Share StyleURL" link to GitHub Gist
+- Show error message when devtools isn't open and the user clicks "Share" or "Create Gist"
+
 ## 1.1.5
 
 Ignore error causd by tab to not exist when resetting browserAction. This caused other things to break, and is a safe error to silence (famous last words)

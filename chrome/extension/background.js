@@ -40,6 +40,11 @@ Raven.config(
   "https://26483721d124446bb37ebe913d3b8347@sentry.io/1246693"
 ).install();
 
+Raven.setExtraContext({
+  version: chrome.runtime.getManifest().version,
+  environment: process.env.NODE_ENV
+});
+
 Raven.context(function() {
   let DEVTOOLS_OPEN_TABS = {};
   let devtoolConnection;

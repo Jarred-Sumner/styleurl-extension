@@ -73,6 +73,7 @@ class CreateStyleURL extends React.PureComponent {
       stylesheets,
       shareURL,
       setShareLinkRef,
+      onSendFeedback,
       hidden,
       onHide
     } = this.props;
@@ -81,6 +82,7 @@ class CreateStyleURL extends React.PureComponent {
       <HeaderBar
         hidden={hidden}
         onHide={onHide}
+        onSendFeedback={onSendFeedback}
         center={
           <input
             value={shareURL}
@@ -213,6 +215,16 @@ class CreateStyleURLContainer extends React.Component {
     });
   };
 
+  handleSendFeedback = message => {
+    return this._sendMessage({
+      kind: MESSAGE_TYPES.send_feedback,
+      value: {
+        message,
+        from: "create"
+      }
+    });
+  };
+
   handleShareChanges = () => {
     return this._sendMessage({
       kind: MESSAGE_TYPES.get_current_styles_diff,
@@ -284,6 +296,7 @@ class CreateStyleURLContainer extends React.Component {
         onHide={this.handleHide}
         stylesheets={this.state.stylesheets}
         onToggleDiff={this.handleToggleDiff}
+        onSendFeedback={this.handleSendFeedback}
         setShareLinkRef={this.setShareLinkRef}
         shareURL={this.state.shareURL}
       />

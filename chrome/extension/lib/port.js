@@ -38,7 +38,8 @@ export const MESSAGE_TYPES = {
   stop_observing_inline_styles: "start_observing_inline_styles",
   geT_inline_style_diff: "get_all_inline_styles",
   open_style_editor: "open_style_editor",
-  open_devtools_plz: "open_devtools_plz"
+  open_devtools_plz: "open_devtools_plz",
+  send_feedback: "send_feedback"
 };
 
 export const STYLESHEET_TYPE = {

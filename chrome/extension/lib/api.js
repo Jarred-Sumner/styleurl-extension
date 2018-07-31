@@ -47,6 +47,17 @@ export const uploadStylesheets = async ({
   });
 };
 
+export const sendFeedback = async ({ message, from }) => {
+  return apiFetch("/api/feedback", {
+    method: "POST",
+    body: JSON.stringify({
+      message,
+      version: chrome.runtime.getManifest().version,
+      from
+    })
+  });
+};
+
 export const processScreenshot = ({
   key: stylesheet_key,
   domain: stylesheet_domain

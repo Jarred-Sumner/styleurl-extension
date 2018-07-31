@@ -1,3 +1,8 @@
+## 1.1.9
+
+- Fixed flash of unstyled content when the bar at the bottom loads
+- Added in-app feedback widget to help us improve the product, inspired by the one in the Stripe Dashboard.
+
 ## 1.1.8
 
 Bump version of `stylesheet-differ`. This fixes some bugs people were experiencing when viewing the diff.

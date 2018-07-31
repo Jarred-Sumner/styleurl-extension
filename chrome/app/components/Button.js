@@ -5,7 +5,8 @@ import "./Button.css";
 export const BUTTON_COLORS = {
   blue: "blue",
   black: "black",
-  default: "default"
+  default: "default",
+  white: "white"
 };
 
 export const BUTTON_SIZES = {
@@ -39,6 +40,7 @@ export class Button extends React.Component {
         className: classNames("Button", {
           "Button--color-blue": BUTTON_COLORS[color] === BUTTON_COLORS.blue,
           "Button--color-black": BUTTON_COLORS[color] === BUTTON_COLORS.black,
+          "Button--color-white": BUTTON_COLORS[color] === BUTTON_COLORS.white,
           "Button--color-default":
             BUTTON_COLORS[color] === BUTTON_COLORS.default,
           "Button--size-default": BUTTON_COLORS[size] === BUTTON_SIZES.default

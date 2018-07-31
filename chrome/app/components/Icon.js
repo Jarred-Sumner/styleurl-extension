@@ -1,6 +1,16 @@
 import React from "react";
 import "./Icon.css";
 
+const FeedbackIcon = ({ width, height, ...otherProps }) => (
+  <svg width={width} height={height} {...otherProps} viewBox="0 0 22 22">
+    <path
+      d="M0 1v19.753a1 1 0 0 0 1.67.743l3.301-2.974H21a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1H1a1 1 0 0 0-1 1zm5.891 3.14h4.19a.92.92 0 1 1 0 1.84H5.89a.92.92 0 1 1 0-1.84zm-.92 9.592a.92.92 0 0 1 .92-.92h8.14a.92.92 0 1 1 0 1.84h-8.14a.92.92 0 0 1-.92-.92zm11.138-3.416H5.891a.92.92 0 0 1 0-1.84H16.11a.92.92 0 1 1 0 1.84z"
+      fillRule="nonzero"
+      className="IconFill"
+    />
+  </svg>
+);
+
 const ExportIcon = ({ width, height, ...otherProps }) => (
   <svg width={width} height={height} viewBox="0 0 37 36">
     <g className="IconFill" fillRule="evenodd">
@@ -54,7 +64,8 @@ const ICON_BY_NAME = {
   close: CloseIcon,
   code: CodeIcon,
   share: ShareIcon,
-  export: ExportIcon
+  export: ExportIcon,
+  feedback: FeedbackIcon
 };
 
 export const Icon = ({ width, height, color, name, ...otherProps }) => {

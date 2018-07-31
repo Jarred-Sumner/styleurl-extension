@@ -11,7 +11,8 @@ import {
 import {
   SCREENSHOT_CONTENT_TYPE,
   uploadScreenshot,
-  uploadStylesheets
+  uploadStylesheets,
+  sendFeedback
 } from "./lib/api";
 import {
   BROWSER_ACTION_STATES,
@@ -271,6 +272,8 @@ Raven.context(function() {
     const tab = await getTab(tabId);
 
     if (kind === kinds.log) {
+    } else if (kind === kinds.send_feedback) {
+      sendFeedback({ message: request.value.message });
     } else if (kind === kinds.get_current_styles_diff) {
       if (
         !DEVTOOLS_OPEN_TABS[tabId] &&

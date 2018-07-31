@@ -38,6 +38,10 @@ a.Button--color-black {
     background-color: #13161B;
 }
 
+.Button--color-white {
+    border: 1px solid #333;
+}
+
 .Button--color-black .Button-text {
     color: white;
 }

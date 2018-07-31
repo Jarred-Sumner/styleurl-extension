@@ -1,0 +1,106 @@
+.FeedbackFormContainer {
+    display: block;
+    position: relative;
+    white-space: nowrap;
+    margin-left: 14px;
+}
+
+.FeedbackForm-placeholder,
+.FeedbackForm-input {
+    opacity: 1;
+    border-radius: 4px;
+}
+
+.FeedbackForm--collapsed .FeedbackForm-input,
+.FeedbackForm--expanded .FeedbackForm-placeholder {
+    opacity: 0;
+    transition: 0.2s opacity linear;
+    pointer-events: none;
+}
+
+.FeedbackForm--expanded .FeedbackForm-input,
+.FeedbackForm--collapsed .FeedbackForm-placeholder {
+    opacity: 1;
+    pointer-events: auto;
+    transition: 0.2s opacity linear;
+}
+
+.FeedbackForm-input {
+    position: absolute;
+    bottom: 0px;
+    left: 0;
+    padding: 14px;
+    background-color: white;
+    border: 1px solid #e9ebf5;
+    box-shadow: 0 0 20px 0 rgba(161, 166, 187, 0.35);
+    width: 300px;
+    flex-direction: column;
+}
+
+.FeedbackForm-copy {
+    margin-top: 7px;
+    color: #3B55E6;
+    margin-bottom: 7px;
+}
+
+.FeedbackInput {
+    margin: -7px -14px;
+    padding: 7px 14px;
+    font-family: "Open Sans", sans-serif;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    line-height: 18px;
+    appearance: none;
+    border: 0;
+    resize: none;
+    outline: none;
+    box-shadow: none;
+    width: 100%;
+}
+
+.FeedbackForm-placeholder {
+    background-color: #fcfcfc;
+    align-items: center;
+    padding: 7px 14px;
+    justify-content: center;
+    border: 1px solid #e9ebf5;
+    display: flex;
+}
+
+.FeedbackForm-placeholder .Icon {
+    display: flex;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.FeedbackForm-inputButtons {
+    display: flex;
+    justify-content: space-between;
+}
+
+.Icon {
+    margin-right: 8px;
+}
+
+.FeedbackForm-inputButtons .Button {
+    margin: 0;
+    color: black;
+}
+
+.FeedbackForm-input {
+    margin: 0;
+}
+
+@media (max-width: 1000px) {
+    .FeedbackForm-placeholder > .FeedbackForm-title {
+        display: none;
+    }
+
+    .FeedbackForm-placeholder {
+        background: transparent;
+        padding: 0;
+        border: 0;
+    }
+}

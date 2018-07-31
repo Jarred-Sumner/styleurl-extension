@@ -26,6 +26,21 @@ export const injectShadowDOM = ({
     "#intercom-container { display: none !important; opacity: 0 !important; pointer-events: none !important; }";
   document.body.appendChild(disableIntercomForcefully);
 
+  const hideFOUC = document.createElement("style");
+
+  hideFOUC.id = "__styleurl--handle-loading-fouc";
+
+  hideFOUC.innerHTML = `
+#${id} > div {
+  display: none;
+}
+
+#${id} > div.resolved {
+  display: block;
+}
+  `;
+  document.body.appendChild(hideFOUC);
+
   const shadowContainer = document.createElement("div");
   shadowContainer.id = id;
   shadowContainer.style.width = "100%";
@@ -45,9 +60,8 @@ export const injectShadowDOM = ({
   document.body.appendChild(shadowContainer);
 
   ReactDOM.render(
-    <ShadowDOM>
+    <ShadowDOM include={[include]}>
       <div className="ignore-react-onclickoutside">
-        <link rel="stylesheet" href={include} type="text/css" />
         <div className="StyleURLShadowDOMRoot">
           <Component />
         </div>

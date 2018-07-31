@@ -36,14 +36,17 @@ class ViewStyleURL extends React.PureComponent {
       hidden,
       onHide,
       stylesheets,
+      onSendFeedback,
       onClickShare,
       shareURL
     } = this.props;
 
     return (
       <HeaderBar
+        className="HeaderBar--ViewStyleURL"
         hidden={!isBarEnabled || hidden}
         onHide={onHide}
+        onSendFeedback={onSendFeedback}
         center={
           <Switcher
             onLabel="New changes"
@@ -128,6 +131,15 @@ class ViewStyleURLContainer extends React.Component {
       isBarEnabled: !this.state.isBarEnabled
     });
   };
+  handleSendFeedback = message => {
+    return this._sendMessage({
+      kind: MESSAGE_TYPES.send_feedback,
+      value: {
+        message,
+        from: "view"
+      }
+    });
+  };
 
   toggleApplyStyle = () => {
     this._sendMessage(MESSAGE_TYPES.update_styleurl_state, {
@@ -165,6 +177,7 @@ class ViewStyleURLContainer extends React.Component {
         gistId={this.state.styleurl ? this.state.styleurl.gistId : null}
         toggleApplyStyle={this.toggleApplyStyle}
         onClickShare={this.handleClickShare}
+        onSendFeedback={this.handleSendFeedback}
         hidden={hidden}
         onHide={this.handleHide}
         shareURL={

@@ -173,10 +173,8 @@ class CreateStyleURLContainer extends React.Component {
         ])
       });
 
-      if (!_.isArray(stylesheets) || stylesheets.length === 0) {
-        if (!hidden) {
-          this.toggleBar(false);
-        }
+      if ((!_.isArray(stylesheets) || stylesheets.length === 0) && !hidden) {
+        this.toggleBar(false);
       } else if (hidden) {
         this.toggleBar(true);
       }

@@ -1,3 +1,7 @@
+## 1.1.11
+
+- On some websites, the code diff text was centered. It should be left aligned. So, I made it left-aligned.
+
 ## 1.1.10
 
 - Automatically hide the bottom bar when there are no more CSS changes

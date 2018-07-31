@@ -4,6 +4,7 @@
     overflow-x: hidden;
     overflow-y: auto;
     max-height: 240px;
+    text-align: left;
 }
 
 .CodeDiff pre {

@@ -171,6 +171,7 @@ class CreateStyleURLContainer extends React.Component {
           content
         ])
       });
+      this.setVisible(!_.isEmpty(stylesheets));
     });
   };
 
@@ -276,16 +277,16 @@ class CreateStyleURLContainer extends React.Component {
     });
   };
 
-  handleHide = () => {
-    this.setState({
-      hidden: true
-    });
+  setVisible = isVisible => {
+    this.setState({ hidden: !isVisible });
 
     const shadowRoot = document.querySelector(
       `#${injectScriptNames.inject_create_styleurl}`
     );
-    shadowRoot.style.display = "none";
+    shadowRoot.style.display = isVisible ? "block" : "none";
   };
+
+  handleHideBar = () => this.setVisible(false);
 
   render() {
     return (
@@ -293,7 +294,7 @@ class CreateStyleURLContainer extends React.Component {
         hidden={this.state.hidden}
         onExport={this.handleExport}
         onShareChanges={this.handleShareChanges}
-        onHide={this.handleHide}
+        onHide={this.handleHideBar}
         stylesheets={this.state.stylesheets}
         onToggleDiff={this.handleToggleDiff}
         onSendFeedback={this.handleSendFeedback}

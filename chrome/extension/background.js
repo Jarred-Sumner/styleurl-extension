@@ -278,7 +278,10 @@ Raven.context(function() {
 
     if (kind === kinds.log) {
     } else if (kind === kinds.send_feedback) {
-      sendFeedback({ message: request.value.message });
+      sendFeedback({
+        message: request.value.message,
+        from: request.value.from
+      });
     } else if (kind === kinds.get_current_styles_diff) {
       if (
         !DEVTOOLS_OPEN_TABS[tabId] &&

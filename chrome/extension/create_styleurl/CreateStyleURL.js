@@ -172,12 +172,7 @@ class CreateStyleURLContainer extends React.Component {
           content
         ])
       });
-
-      if ((!_.isArray(stylesheets) || stylesheets.length === 0) && !hidden) {
-        this.toggleBar(false);
-      } else if (hidden) {
-        this.toggleBar(true);
-      }
+      this.toggleBar(!_.isArray(stylesheets) || stylesheets.length === 0);
     });
   };
 
@@ -292,13 +287,15 @@ class CreateStyleURLContainer extends React.Component {
     shadowRoot.style.display = isVisible ? "block" : "none";
   };
 
+  handleHideBar = () => this.toggleBar(false);
+
   render() {
     return (
       <CreateStyleURL
         hidden={this.state.hidden}
         onExport={this.handleExport}
         onShareChanges={this.handleShareChanges}
-        onHide={() => this.toggleBar(false)}
+        onHide={this.handleHideBar}
         stylesheets={this.state.stylesheets}
         onToggleDiff={this.handleToggleDiff}
         onSendFeedback={this.handleSendFeedback}

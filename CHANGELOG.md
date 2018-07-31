@@ -1,3 +1,8 @@
+## 1.1.10
+
+- Automatically hide the bottom bar when there are no more CSS changes
+- Include whether in-app feedback is from the view styleurl or the create styleurl bar
+
 ## 1.1.9
 
 - Fixed flash of unstyled content when the bar at the bottom loads

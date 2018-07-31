@@ -162,7 +162,6 @@ class CreateStyleURLContainer extends React.Component {
   }
 
   syncStylesheets = () => {
-    const { hidden } = this.state;
     this._sendMessage({
       kind: MESSAGE_TYPES.get_current_styles_diff
     }).then(({ stylesheets }) => {
@@ -172,7 +171,7 @@ class CreateStyleURLContainer extends React.Component {
           content
         ])
       });
-      this.toggleBar(!_.isArray(stylesheets) || stylesheets.length === 0);
+      this.setVisible(!_.isEmpty(stylesheets));
     });
   };
 
@@ -278,7 +277,7 @@ class CreateStyleURLContainer extends React.Component {
     });
   };
 
-  toggleBar = isVisible => {
+  setVisible = isVisible => {
     this.setState({ hidden: !isVisible });
 
     const shadowRoot = document.querySelector(
@@ -287,7 +286,7 @@ class CreateStyleURLContainer extends React.Component {
     shadowRoot.style.display = isVisible ? "block" : "none";
   };
 
-  handleHideBar = () => this.toggleBar(false);
+  handleHideBar = () => this.setVisible(false);
 
   render() {
     return (

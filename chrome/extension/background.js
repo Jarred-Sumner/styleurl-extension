@@ -30,6 +30,7 @@ import {
   styleURLsForTabId
 } from "./lib/StyleURLTab";
 import { toFile } from "./lib/toFile";
+import browser from "webextension-polyfill";
 
 const diffSheet = memoizee(_diffSheet, {
   maxAge: 300000, // 5 minutes,
@@ -41,7 +42,7 @@ Raven.config(
 ).install();
 
 Raven.setExtraContext({
-  version: chrome.runtime.getManifest().version,
+  version: browser.runtime.getManifest().version,
   environment: process.env.NODE_ENV
 });
 
@@ -104,10 +105,7 @@ Raven.context(function() {
     delete LAST_RECEIVED_TAB_ORIGINAL_STYLES[tabId];
   };
 
-  const getTab = tabId =>
-    new Promise((resolve, reject) => {
-      chrome.tabs.get(tabId, resolve);
-    });
+  const getTab = tabId => browser.tabs.get(tabId);
 
   const getTabId = sender => parseInt(_.last(sender.split("::")), 10);
 
@@ -168,21 +166,11 @@ Raven.context(function() {
       document.getElementById(idName).style.opacity = opacity;
     };
 
-    return new Promise(resolve => {
-      chrome.tabs.executeScript(
-        tabId,
-        {
-          code: `(${script.toString()})("${
-            injectScriptNames.inject_create_styleurl
-          }", ${show ? 1 : 0})`,
-          runAt: "document_start"
-        },
-        () => {
-          setTimeout(() => {
-            resolve();
-          }, 50);
-        }
-      );
+    return browser.tabs.executeScript(tabId, {
+      code: `(${script.toString()})("${
+        injectScriptNames.inject_create_styleurl
+      }", ${show ? 1 : 0})`,
+      runAt: "document_start"
     });
   };
 
@@ -298,9 +286,9 @@ Raven.context(function() {
 
       getCurrentStylesheetsDiff(tabId).then(response => sendResponse(response));
     } else if (kind === kinds.send_success_notification) {
-      chrome.notifications.create({
+      browser.notifications.create({
         type: "basic",
-        iconUrl: chrome.extension.getURL(DEFAULT_ICON_PATH["128"]),
+        iconUrl: browser.extension.getURL(DEFAULT_ICON_PATH["128"]),
         title: !request.value.didCopy
           ? `Created styleurl`
           : "Copied your styleurl to clipboard",
@@ -331,43 +319,43 @@ Raven.context(function() {
         sendStyleURLsToTab({ tabId });
       }
     } else if (kind === kinds.shared_styleurl) {
-      chrome.notifications.create({
+      browser.notifications.create({
         type: "basic",
-        iconUrl: chrome.extension.getURL(DEFAULT_ICON_PATH["128"]),
+        iconUrl: browser.extension.getURL(DEFAULT_ICON_PATH["128"]),
         title: "Copied styleurl to clipboard",
         message: "Share the styleurl by pasting it to a friend or colleague"
       });
     } else if (kind === kinds.upload_stylesheets) {
       toggleStylebar(tabId, false).then(() => {
-        chrome.tabs.captureVisibleTab(null, { format: "png" }, async function(
-          photo
-        ) {
-          uploadStylesheets({
-            stylesheets: request.value.stylesheets,
-            url: tab.url,
-            visibility: request.value.visibility
-          }).then(stylesheetResponse => {
-            sendResponse(stylesheetResponse);
-            if (stylesheetResponse.success) {
-              chrome.tabs.update(tabId, { selected: true });
+        browser.tabs
+          .captureVisibleTab(null, { format: "png" })
+          .then(async photo => {
+            uploadStylesheets({
+              stylesheets: request.value.stylesheets,
+              url: tab.url,
+              visibility: request.value.visibility
+            }).then(stylesheetResponse => {
+              sendResponse(stylesheetResponse);
+              if (stylesheetResponse.success) {
+                browser.tabs.update(tabId, { selected: true });
 
-              window.setTimeout(async () => {
-                // Capturing the photo fails sometimes shrug
-                if (photo) {
-                  uploadScreenshot({
-                    photo: await toFile(photo, SCREENSHOT_CONTENT_TYPE),
-                    key: stylesheetResponse.data.id,
-                    domain: stylesheetResponse.data.domain
-                  });
-                }
+                window.setTimeout(async () => {
+                  // Capturing the photo fails sometimes shrug
+                  if (photo) {
+                    uploadScreenshot({
+                      photo: await toFile(photo, SCREENSHOT_CONTENT_TYPE),
+                      key: stylesheetResponse.data.id,
+                      domain: stylesheetResponse.data.domain
+                    });
+                  }
 
-                toggleStylebar(tabId, true);
-              }, 50);
-            } else {
-              alert("Something didnt work quite right. Please try again!");
-            }
+                  toggleStylebar(tabId, true);
+                }, 50);
+              } else {
+                alert("Something didnt work quite right. Please try again!");
+              }
+            });
           });
-        });
       });
     }
   };
@@ -516,7 +504,7 @@ Raven.context(function() {
       );
   };
 
-  chrome.browserAction.onClicked.addListener(tab => {
+  browser.browserAction.onClicked.addListener(tab => {
     console.log("Clicked Browser Action", getBrowserActionState());
     if (getBrowserActionState() === BROWSER_ACTION_STATES.default) {
       injectCreateStyleURLBar(tab.id);
@@ -529,7 +517,7 @@ Raven.context(function() {
     }
   });
 
-  chrome.webNavigation.onBeforeNavigate.addListener(
+  browser.webNavigation.onBeforeNavigate.addListener(
     ({ tabId, url }) => {
       autodetectStyleURL({ tabId, url });
     },
@@ -565,15 +553,15 @@ Raven.context(function() {
     }
   };
 
-  chrome.webNavigation.onCommitted.addListener(tab =>
+  browser.webNavigation.onCommitted.addListener(tab =>
     stopMonitoringTabID(tab.tabId)
   );
-  chrome.webNavigation.onCommitted.addListener(autoInsertCSS);
-  chrome.webNavigation.onHistoryStateUpdated.addListener(({ tabId, url }) =>
+  browser.webNavigation.onCommitted.addListener(autoInsertCSS);
+  browser.webNavigation.onHistoryStateUpdated.addListener(({ tabId, url }) =>
     autodetectStyleURL({ url, tabId })
   );
 
-  chrome.webNavigation.onReferenceFragmentUpdated.addListener(({ tabId }) =>
+  browser.webNavigation.onReferenceFragmentUpdated.addListener(({ tabId }) =>
     sendStyleURLsToTab({ tabId })
   );
 
@@ -601,14 +589,16 @@ Raven.context(function() {
     }
   };
 
-  chrome.webNavigation.onDOMContentLoaded.addListener(injectBarHistoryListener);
-
-  chrome.webNavigation.onHistoryStateUpdated.addListener(
+  browser.webNavigation.onDOMContentLoaded.addListener(
     injectBarHistoryListener
   );
-  chrome.webNavigation.onTabReplaced.addListener(injectBarHistoryListener);
 
-  chrome.tabs.onRemoved.addListener(tabId => {
+  browser.webNavigation.onHistoryStateUpdated.addListener(
+    injectBarHistoryListener
+  );
+  browser.webNavigation.onTabReplaced.addListener(injectBarHistoryListener);
+
+  browser.tabs.onRemoved.addListener(tabId => {
     if (TAB_IDS_TO_APPLY_STYLES[tabId]) {
       stopMonitoringTabID(tabId);
     }
@@ -644,9 +634,9 @@ Raven.context(function() {
   );
 
   // If you just installed and have a styleURL page open, reload the tab so that the content script is loaded
-  chrome.runtime.onInstalled.addListener(() => {
-    chrome.tabs.query({ url: `${__FRONTEND_HOST__}/*` }, tabs => {
-      tabs.forEach(tab => chrome.tabs.reload(tab.id));
+  browser.runtime.onInstalled.addListener(() => {
+    browser.tabs.query({ url: `${__FRONTEND_HOST__}/*` }).then(tabs => {
+      tabs.forEach(tab => browser.tabs.reload(tab.id));
 
       // See if there's any active non-homepage StyleURL tabs and set it to active
       // Basically we want to ignore / and all of the root routes
@@ -657,7 +647,7 @@ Raven.context(function() {
       );
       // Also set it to active
       if (styleURLTab) {
-        chrome.tabs.update(styleURLTab.id, { active: true });
+        browser.tabs.update(styleURLTab.id, { active: true });
       }
     });
   });

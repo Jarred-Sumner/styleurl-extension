@@ -2,6 +2,8 @@ import Messenger from "chrome-ext-messenger";
 import Hashes from "jshashes";
 import _ from "lodash";
 import { MESSAGE_TYPES, PORT_TYPES } from "./lib/port";
+import browser from "webextension-polyfill";
+
 const messenger = new Messenger();
 const SHA256 = new Hashes.SHA256();
 

@@ -1,10 +1,11 @@
 import React from "react";
+import browser from "webextension-polyfill";
 
 const getSrcForSize = multipler => {
   if (!multipler || multipler < 2) {
-    return chrome.extension.getURL("img/white-text-logo.png");
+    return browser.extension.getURL("img/white-text-logo.png");
   } else {
-    return chrome.extension.getURL(`img/white-text-logo@${multipler}x.png`);
+    return browser.extension.getURL(`img/white-text-logo@${multipler}x.png`);
   }
 };
 

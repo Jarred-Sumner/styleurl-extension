@@ -1803,11 +1803,12 @@ chownr@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/chownr/-/chownr-1.0.1.tgz#e2a75042a9551908bebd25b8523d5f9769d79181"
 
-chrome-ext-messenger@^2.0.12:
+chrome-ext-messenger@Jarred-Sumner/chrome-ext-messenger:
   version "2.0.12"
-  resolved "https://registry.yarnpkg.com/chrome-ext-messenger/-/chrome-ext-messenger-2.0.12.tgz#e3388ae3fdb7cca6500598ffca3984b69a4cd265"
+  resolved "https://codeload.github.com/Jarred-Sumner/chrome-ext-messenger/tar.gz/39cb8dbddac11c410fcbe7f9d3446b4a96349f7f"
   dependencies:
     logdown "^2.0.3"
+    webextension-polyfill "^0.3.0"
 
 chrome-trace-event@^1.0.0:
   version "1.0.0"
@@ -8373,6 +8374,10 @@ watchpack@^1.5.0:
     chokidar "^2.0.2"
     graceful-fs "^4.1.2"
     neo-async "^2.5.0"
+
+webextension-polyfill@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/webextension-polyfill/-/webextension-polyfill-0.3.0.tgz#f2868572e3b22c33c104e219d89d0cfec01ddf37"
 
 webidl-conversions@^3.0.0:
   version "3.0.1"

@@ -4,6 +4,7 @@ import Messenger from "chrome-ext-messenger";
 import { PORT_TYPES, MESSAGE_TYPES } from "./lib/port";
 import { makeAllRulesImportant } from "./lib/makeEverythingImportant";
 import { shouldApplyStyleToURL } from "./lib/stylefile";
+import browser from "webextension-polyfill";
 
 (() => {
   if (typeof window.applyOnMessage === "function") {
@@ -36,8 +37,8 @@ import { shouldApplyStyleToURL } from "./lib/stylefile";
   window.applyOnMessage = applyOnMessage;
 
   if (!isOwnPage) {
-    window.dispatchEvent(new CustomEvent(chrome.runtime.id));
-    window.addEventListener(chrome.runtime.id, orphanCheck, true);
+    window.dispatchEvent(new CustomEvent(browser.runtime.id));
+    window.addEventListener(browser.runtime.id, orphanCheck, true);
   }
 
   function requestStyles(options, callback = applyStyles) {
@@ -381,7 +382,7 @@ import { shouldApplyStyleToURL } from "./lib/stylefile";
   function applyTransitionPatch() {
     // CSS transition bug workaround: since we insert styles asynchronously,
     // the browsers, especially Firefox, may apply all transitions on page load
-    const className = chrome.runtime.id + "-transition-bug-fix";
+    const className = browser.runtime.id + "-transition-bug-fix";
     const docId = document.documentElement.id
       ? "#" + document.documentElement.id
       : "";
@@ -413,15 +414,15 @@ import { shouldApplyStyleToURL } from "./lib/stylefile";
   }
 
   function orphanCheck() {
-    if (chrome.i18n && chrome.i18n.getUILanguage()) {
+    if (browser.i18n && browser.i18n.getUILanguage()) {
       return true;
     }
     // In Chrome content script is orphaned on an extension update/reload
     // so we need to detach event listeners
     [docRewriteObserver, docRootObserver].forEach(ob => ob && ob.disconnect());
-    window.removeEventListener(chrome.runtime.id, orphanCheck, true);
+    window.removeEventListener(browser.runtime.id, orphanCheck, true);
     try {
-      chrome.runtime.onMessage.removeListener(applyOnMessage);
+      browser.runtime.onMessage.removeListener(applyOnMessage);
     } catch (e) {}
   }
 

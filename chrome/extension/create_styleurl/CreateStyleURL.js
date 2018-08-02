@@ -278,12 +278,24 @@ class CreateStyleURLContainer extends React.Component {
   };
 
   setVisible = isVisible => {
-    this.setState({ hidden: !isVisible });
+    const hidden = !isVisible;
+    if (hidden === this.state.hidden) {
+      return;
+    }
+
+    this.setState({ hidden });
 
     const shadowRoot = document.querySelector(
       `#${injectScriptNames.inject_create_styleurl}`
     );
-    shadowRoot.style.display = isVisible ? "block" : "none";
+
+    if (hidden) {
+      shadowRoot.style.opacity = 0;
+      shadowRoot.style.pointerEvents = "none";
+    } else {
+      shadowRoot.style.opacity = 1;
+      shadowRoot.style.pointerEvents = "auto";
+    }
   };
 
   handleHideBar = () => this.setVisible(false);

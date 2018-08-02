@@ -39,7 +39,7 @@ const getResources = () =>
 const getResourceUrl = resource => {
   let resourceUrl = resource.url;
   if (resourceUrl.startsWith("data:")) {
-    resourceUrl = `datauri-${SHA256.hex(resourceUrl)}.css`;
+    resourceUrl = `datauri-${SHA256.hex(resourceUrl)}` + ".css";
   }
   return resourceUrl;
 };
@@ -63,25 +63,25 @@ const getStyleTagsInBrowser = () => {
   const styles = {};
   Object.keys(__extractedStyles).map(ind => {
     const ss = __extractedStyles[ind];
-    let sturl;
-    if (typeof ss.href === "string") {
-      return null; // Don't extract non style tags
+    // ignore:
+    // - non-style tags
+    // - empty style tags (those are not editable from devtools)
+    if (
+      typeof ss.href === "string" ||
+      !ss.ownerNode ||
+      ss.ownerNode.innerHTML.length === 0
+    ) {
+      return null;
     }
-    if (ss.ownerNode) {
-      if (ss.ownerNode.id.length === 0) {
-        ss.ownerNode.dataset.styleurl_id = "style" + ind;
-      } else {
-        ss.ownerNode.dataset.styleurl_id = ss.ownerNode.id;
-      }
-      sturl = ss.ownerNode.dataset.styleurl_id;
-    }
+
+    const id = `styletag_${ind}`;
+
+    ss.ownerNode.dataset.styleurl_id = id;
     const content = Object.keys(ss.cssRules)
       .map(sind => ss.cssRules[sind].cssText)
       .join("\n");
-    if (!sturl) {
-      return null;
-    }
-    styles[sturl] = content;
+
+    styles[id] = content;
   });
   return styles;
 };

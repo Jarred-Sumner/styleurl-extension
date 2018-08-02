@@ -74,9 +74,9 @@ const getStyleTagsInBrowser = () => {
       return null;
     }
 
-    const id = `styletag_${ind}`;
-
+    const id = ss.ownerNode.id ? ss.ownerNode.id : `styletag_${ind}`;
     ss.ownerNode.dataset.styleurl_id = id;
+
     const content = Object.keys(ss.cssRules)
       .map(sind => ss.cssRules[sind].cssText)
       .join("\n");

@@ -246,11 +246,7 @@ class CreateStyleURLContainer extends React.Component {
         }
       })
         .then(response => {
-          if (
-            response &&
-            response.success &&
-            response.data.visibility === "publicly_visible"
-          ) {
+          if (response && response.success) {
             const shareURL = response.data.share_url;
 
             this.setState({ shareURL });

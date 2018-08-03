@@ -7,12 +7,13 @@
     "dev": "node scripts/dev",
     "build": "node scripts/build",
     "compress": "node scripts/compress",
+    "update-readme": "node scripts/update-readme",
     "compress-keygen": "crx keygen",
     "clean": "rimraf build/ dev/ *.zip *.crx",
     "lint": "eslint app chrome test scripts webpack/*.js",
     "test-e2e": "cross-env NODE_ENV=test mocha -r ./test/setup-app test/e2e",
     "test": "cross-env NODE_ENV=test mocha -r ./test/setup-app test/app",
-    "release": "yarn && yarn build && yarn compress --release"
+    "release": "yarn && yarn build && yarn compress --release && yarn update-readme"
   },
   "repository": {
     "type": "git",

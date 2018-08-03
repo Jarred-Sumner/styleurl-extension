@@ -8,18 +8,20 @@ export const buildURL = path => {
 };
 
 const apiFetch = (path, options = {}) => {
+  const headers = new Headers(options.headers || {});
+  headers.append(
+    "User-Agent",
+    `StyleURL v${chrome.app.getDetails().version} (${process.env.NODE_ENV})`
+  );
+  headers.append("Content-Type", "application/json");
+  headers.append("X-StyleURL-Version", chrome.app.getDetails().version);
+
   return window
     .fetch(buildURL(path), {
       ...options,
       credentials: "include",
       redirect: "follow",
-      headers: {
-        ...(options.headers || {}),
-        "User-Agent": `StyleURL v${chrome.app.getDetails().version} (${
-          process.env.NODE_ENV
-        })`,
-        "Content-Type": "application/json"
-      }
+      headers
     })
     .then(response => response.json())
     .catch(error => {

@@ -1,8 +1,21 @@
+## 1.1.13
+
+StyleURL now supports creating secret gists, so that they don't appear in search or anywhere public. This is now the behavior by default.
+
 ## 1.1.12
 
-Fixed issue where navigating around in Reddit sometimes caused a giant diff to appear of changes on the page. This happened because Reddit uses `<style>` which are empty in the DOM, but with rules populated via `insertRule` - https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/insertRule
+Fixed issue where navigating around in Reddit sometimes caused a giant diff to appear of changes on the page. This happened because:
+
+Reddit uses `<style>` which are empty in the DOM, but with rules populated via `insertRule` - https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/insertRule
 
 It just so happens that these style tags are not editable from within devtools anyway.
+
+As part of this, realized that if style tags are added/removed dynamically to the website while devtools is open, StyleURL will think the user changed it instead of the site.
+
+TODO, these two fixes:
+
+1.  Add a MutationObserver for tracking when style tags are added or removed from the DOM, and add the contents of the style tag to TAB_ORIGINAL_STYLES
+2.  When history state updates, reset devtools.js. Currently, it only does this when you navigate.
 
 ## 1.1.11
 

@@ -1,6 +1,6 @@
 # StyleURL Extension
 
-StyleURL is the easiest way for developers & designers to collaborate on CSS changes.
+[StyleURL](https://www.styleurl.app) is the easiest way for developers & designers to collaborate on CSS changes. This is the source code for the Chrome extension.
 
 ### What's New (v1.1.13 - August 3, 2018)
 

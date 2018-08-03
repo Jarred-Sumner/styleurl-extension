@@ -1,3 +1,9 @@
+## 1.1.12
+
+Fixed issue where navigating around in Reddit sometimes caused a giant diff to appear of changes on the page. This happened because Reddit uses `<style>` which are empty in the DOM, but with rules populated via `insertRule` - https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/insertRule
+
+It just so happens that these style tags are not editable from within devtools anyway.
+
 ## 1.1.11
 
 - On some websites, the code diff text was centered. It should be left aligned. So, I made it left-aligned.

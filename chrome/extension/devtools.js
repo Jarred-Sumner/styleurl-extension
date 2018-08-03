@@ -69,7 +69,8 @@ const getStyleTagsInBrowser = () => {
     if (
       typeof ss.href === "string" ||
       !ss.ownerNode ||
-      ss.ownerNode.innerHTML.length === 0
+      ss.ownerNode.innerHTML.length === 0 ||
+      (ss.ownerNode.id && ss.ownerNode.id.includes("__styleurl"))
     ) {
       return null;
     }

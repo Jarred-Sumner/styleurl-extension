@@ -75,8 +75,19 @@ const getStyleTagsInBrowser = () => {
       return null;
     }
 
-    const id = ss.ownerNode.id ? ss.ownerNode.id : `styletag_${ind}`;
-    ss.ownerNode.dataset.styleurl_id = id;
+    let id = ss.ownerNode.dataset.styleurl_id;
+    if (!id) {
+      id = ss.ownerNode.id ? ss.ownerNode.id : `styletag_${ind}`;
+
+      if (!!document.querySelector(`[data-style_url="${id}"`)) {
+        id = `styletag_${Math.random()
+          .toString(36)
+          .replace(/[^a-z]+/g, "")
+          .substr(0, 5)}`;
+      }
+
+      ss.ownerNode.dataset.styleurl_id = id;
+    }
 
     const content = Object.keys(ss.cssRules)
       .map(sind => ss.cssRules[sind].cssText)
@@ -226,6 +237,7 @@ const contentStyleListener = resource => {
   if (resource.url.startsWith("debugger://")) {
     return;
   }
+  log("CONTENT COMMITTED", resource ? resource.url : null);
   sendContentStyles(resource).then(() => {
     connection.sendMessage(`background:${PORT_TYPES.devtool_widget}`, {
       kind: MESSAGE_TYPES.open_style_editor

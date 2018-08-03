@@ -1,10 +1,16 @@
 # StyleURL Extension
 
-StyleURL is the easiest way for developers & designers to collaborate on CSS changes. 
+StyleURL is the easiest way for developers & designers to collaborate on CSS changes.
+
+## What's New (v1.1.13 - August 3, 2018)
+
+StyleURL now supports creating secret gists, so that they don't appear in search or anywhere public. This is now the behavior by default.
+
+---
 
 ## Export CSS from Chrome
 
-Make style changes from Chrome Inspector, and StyleURL will show you the diff of your CSS changes in the page. 
+Make style changes from Chrome Inspector, and StyleURL will show you the diff of your CSS changes in the page.
 
 Before StyleURL, to get your CSS tweaks out of Chrome DevTools, you had to select each element, remember what you changed, and copy it to a file. Now, StyleURL will automatically detect all of your changes and show you the diff.
 
@@ -21,6 +27,7 @@ Add `?__styleurl=gist_${gistID}` to the URL on a webpage, and it'll automaticall
 StyleURL is not the primary storage place for the userstyles. They're currently stored on GitHub as a Gist (more providers could easily be added later). This reduces the dependence of any centralized party for StyleURL to work, giving people better control of their data.
 
 Example Stylefile:
+
 ```yaml
 ---
 version: 1.0 # Optional
@@ -36,11 +43,13 @@ shared_via: StyleURL – import and export CSS changes from Chrome Inspector to 
 ```
 
 StyleURL generates and uses a Stylefile to:
+
 - Detect which pages a StyleURL should be applied to (`url_patterns`)
 - Detect which domains a StyleURL correspond to (`domains`)
 - When activated from a different page, which absolute URL to redirect to (`redirect_url`)
 
 Under the hood, the way this works is:
+
 - Given a StyleURL, the extension fetches the corresponding Gist, reads the Stylefile, and if the URL matches the current URL, downloads the stylesheets within the Gist and applies them to the current page.
 
 ### Development

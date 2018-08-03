@@ -11,7 +11,7 @@ const _ = require("lodash");
 
 const README = fs.readFileSync(README_PATH, "utf-8");
 
-const WHATS_NEW_STRING = "## What's New";
+const WHATS_NEW_STRING = "### What's New";
 
 function formatDate(date) {
   var monthNames = [

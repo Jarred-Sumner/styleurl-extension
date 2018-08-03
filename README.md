@@ -2,7 +2,7 @@
 
 StyleURL is the easiest way for developers & designers to collaborate on CSS changes.
 
-## What's New (v1.1.13 - August 3, 2018)
+### What's New (v1.1.13 - August 3, 2018)
 
 StyleURL now supports creating secret gists, so that they don't appear in search or anywhere public. This is now the behavior by default.
 

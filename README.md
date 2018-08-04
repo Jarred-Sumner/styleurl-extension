@@ -16,7 +16,7 @@ Before StyleURL, to get your CSS tweaks out of Chrome DevTools, you had to selec
 
 ## Save to Gist
 
-StyleURL integrates with GitHub Gists so that you can save and share your CSS changes easily.
+StyleURL integrates with GitHub Gists so that you can save and share your CSS changes easily. As of August 3rd, StyleURL creates secret gists only.
 
 ## Preview live changes from a link
 

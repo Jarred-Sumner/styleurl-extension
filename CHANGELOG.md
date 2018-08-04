@@ -1,3 +1,7 @@
+## 1.1.14
+
+The bottom bar is now hidden when in print mode. Thanks whomever wrote in and flagged this issue.
+
 ## 1.1.13
 
 StyleURL now supports creating secret gists, so that they don't appear in search or anywhere public. This is now the behavior by default.

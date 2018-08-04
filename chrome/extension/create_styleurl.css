@@ -89,3 +89,9 @@ h3 {
 .ShareLink--shown {
     display: inline-block;
 }
+
+@media print {
+    .StyleURLShadowDOMRoot {
+        display: none;
+    }
+}

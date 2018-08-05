@@ -1,3 +1,7 @@
+## 1.1.15
+
+Fix bug in feedback box in ViewStyleURL bar
+
 ## 1.1.14
 
 The bottom bar is now hidden when in print mode. Thanks whomever wrote in and flagged this issue.

@@ -63,15 +63,33 @@ import { shouldApplyStyleToURL } from "./lib/stylefile";
       });
   }
 
-  const convertFromStyleURL = value => {
-    const { stylesheets = [], isStyleEnabled = true, stylefile = {} } = value;
+  const convertFromStyleURL = styleurlList => {
+    let styles = [];
+    let disableAll = false;
 
-    const styles = stylesheets.map(stylesheet => ({
-      code: stylesheet[1],
-      id: stylesheet[0],
-      enabled: isStyleEnabled,
-      important: stylesheet[0].includes(".inline.css")
-    }));
+    styleurlList.map((styleurl, index) => {
+      const {
+        stylesheets = [],
+        isStyleEnabled = true,
+        stylefile = {}
+      } = styleurl;
+
+      if (
+        shouldApplyStyleToURL(stylefile, window.location.href) &&
+        !isStyleEnabled
+      ) {
+        disableAll = true;
+      }
+
+      stylesheets.forEach(stylesheet =>
+        styles.push({
+          code: stylesheet[1],
+          id: `${stylefile.key || index}-${stylesheet[0]}`,
+          enabled: isStyleEnabled,
+          important: stylesheet[0].includes(".inline.css")
+        })
+      );
+    });
 
     const _stylesMap = {};
 
@@ -80,9 +98,7 @@ import { shouldApplyStyleToURL } from "./lib/stylefile";
 
     return {
       prefs: {
-        disableAll:
-          shouldApplyStyleToURL(stylefile, window.location.href) &&
-          !isStyleEnabled
+        disableAll
       },
       styles: _stylesMap
     };

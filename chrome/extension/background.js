@@ -5,7 +5,6 @@ import Raven from "raven-js";
 import _diffSheet from "stylesheet-differ";
 import {
   injectCreateStyleURLBar,
-  injectCSSManager,
   injectViewStyleURLBar
 } from "./background/inject";
 import {
@@ -30,6 +29,7 @@ import {
   styleURLsForTabId
 } from "./lib/StyleURLTab";
 import { toFile } from "./lib/toFile";
+import { Theme } from "./lib/theme";
 
 const diffSheet = memoizee(_diffSheet, {
   maxAge: 300000, // 5 minutes,
@@ -190,7 +190,7 @@ Raven.context(function() {
     styleURLsForTabId(tabId).forEach(styleurl => {
       stylesheetManagerConnection.sendMessage(
         `content_script:${PORT_TYPES.stylesheet_manager}:${tabId}`,
-        { kind: MESSAGE_TYPES.get_styleurl, value: styleurl.toJSON() }
+        { kind: MESSAGE_TYPES.get_styleurl, value: [styleurl.toJSON()] }
       );
     });
   };
@@ -204,8 +204,6 @@ Raven.context(function() {
 
     await startMonitoringTabID({ tabId, gistId });
     sendStyleURLsToTab({ tabId });
-
-    injectCSSManager(tabId);
   };
 
   const handleInlineStyleObserverMessages = async (
@@ -308,8 +306,15 @@ Raven.context(function() {
           "Your CSS changes have been exported to a styleurl successfully. Now you can share it!"
       });
     } else if (kind === kinds.get_styleurl) {
-      const styleURL = _.first(styleURLsForTabId(tabId));
-      sendResponse({ value: styleURL, kind });
+      const currentStyleURLs = styleURLsForTabId(tabId);
+
+      if (currentStyleURLs.length > 0) {
+        sendResponse({ value: currentStyleURLs, kind });
+      } else {
+        const installedStyleURLs = await Theme.findInstalled(tab.url);
+
+        sendResponse({ value: installedStyleURLs, kind });
+      }
     } else if (kind === kinds.update_styleurl_state) {
       const styleURL = _.first(styleURLsForTabId(tabId));
       const { isBarEnabled, isStyleEnabled } = request.value;
@@ -324,12 +329,24 @@ Raven.context(function() {
 
       inlineHeaderConnection.sendMessage(
         `content_script:${PORT_TYPES.inline_header}:${tabId}`,
-        { value: styleURL, kind: kinds.update_styleurl_state }
+        { value: [styleURL], kind: kinds.update_styleurl_state }
       );
 
       if (!from.includes(PORT_TYPES.stylesheet_manager)) {
         sendStyleURLsToTab({ tabId });
       }
+    } else if (kind === kinds.install_theme) {
+      const theme = await Theme.install({
+        source: request.value.source,
+        provider: request.value.provider
+      });
+
+      sendResponse({
+        kind: kinds.install_theme,
+        value: {
+          success: !!theme
+        }
+      });
     } else if (kind === kinds.shared_styleurl) {
       chrome.notifications.create({
         type: "basic",

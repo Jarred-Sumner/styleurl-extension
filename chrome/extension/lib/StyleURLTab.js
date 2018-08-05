@@ -6,6 +6,7 @@ import {
 import { shouldApplyStyleToURL } from "./stylefile";
 import { injectCSSManager } from "../background/inject";
 import { MESSAGE_TYPES, PORT_TYPES } from "./port";
+import { PROVIDERS } from "./theme";
 
 const TAB_IDS_TO_STYLEURL = {};
 
@@ -40,6 +41,7 @@ export class StyleURL {
     return {
       gistId: this.gistId,
       gist: this.gist,
+      installed: this.installed,
       isBarEnabled: this.isBarEnabled,
       isStyleEnabled: this.isStyleEnabled,
       stylefile: this.stylefile,
@@ -60,6 +62,10 @@ export class StyleURL {
     this.stylefile = loadStylefileFromGist(gist);
     this.stylesheets = getStylesheetsFromGist(gist);
     this.loaded = true;
+    this.installed = !!(await Theme.findBySource({
+      source: gistId,
+      provider: PROVIDERS.github
+    }));
   };
 
   applyToTab = (tab, connection) => {
@@ -67,7 +73,6 @@ export class StyleURL {
       return this.setAppliedToURL(tab.url, false);
     }
 
-    injectCSSManager(tab.tabId);
     if (connection) {
       connection.sendMessage(
         `content_script:${PORT_TYPES.stylesheet_manager}:${tab.tabId}`,

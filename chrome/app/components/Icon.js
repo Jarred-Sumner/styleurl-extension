@@ -40,6 +40,16 @@ const ForkIcon = ({ width, height, ...otherProps }) => (
   </svg>
 );
 
+const InstallIcon = ({ width, height, ...otherProps }) => (
+  <svg width={width} height={height} {...otherProps} viewBox="0 0 22 22">
+    <path
+      d="M10 10H6v2h4v4h2v-4h4v-2h-4V6h-2v4zm1 12c6.075 0 11-4.925 11-11S17.075 0 11 0 0 4.925 0 11s4.925 11 11 11z"
+      className="IconFill"
+      fillRule="evenodd"
+    />
+  </svg>
+);
+
 const ShareIcon = ({ width, height, ...otherProps }) => (
   <svg {...otherProps} viewBox="0 0 24 21" width={width} height={height}>
     <path
@@ -65,7 +75,8 @@ const ICON_BY_NAME = {
   code: CodeIcon,
   share: ShareIcon,
   export: ExportIcon,
-  feedback: FeedbackIcon
+  feedback: FeedbackIcon,
+  install: InstallIcon
 };
 
 export const Icon = ({ width, height, color, name, ...otherProps }) => {

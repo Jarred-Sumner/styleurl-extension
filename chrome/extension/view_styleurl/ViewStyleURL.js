@@ -9,6 +9,7 @@ import { Icon } from "../../app/components/Icon";
 import { StylesheetCodePreview } from "../../app/components/StylesheetCodePreview";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import injectScriptNames from "../lib/injectScriptNames";
+import { PROVIDERS } from "../lib/theme";
 const messenger = new Messenger();
 
 const buildShareURL = ({ domain, id }) => {
@@ -38,6 +39,7 @@ class ViewStyleURL extends React.PureComponent {
       stylesheets,
       onSendFeedback,
       onClickShare,
+      onClickInstall,
       shareURL
     } = this.props;
 
@@ -68,6 +70,12 @@ class ViewStyleURL extends React.PureComponent {
             title="Share"
           />
         </CopyToClipboard>
+
+        <Dropdown
+          icon={<Icon width={"32"} height="15" name="install" />}
+          title="Install"
+          onClick={onClickInstall}
+        />
       </HeaderBar>
     );
   }
@@ -104,12 +112,14 @@ class ViewStyleURLContainer extends React.Component {
     );
   }
 
-  updateStyleURL = styleurl =>
+  updateStyleURL = styleurlList => {
+    const styleurl = styleurlList[0];
     this.setState({
       styleurl,
       isBarEnabled: styleurl.isBarEnabled,
       isStyleEnabled: styleurl.isStyleEnabled
     });
+  };
 
   _sendMessage = (kind, message) => {
     return this._connection.sendMessage(
@@ -132,12 +142,18 @@ class ViewStyleURLContainer extends React.Component {
     });
   };
   handleSendFeedback = message => {
-    return this._sendMessage({
-      kind: MESSAGE_TYPES.send_feedback,
+    return this._sendMessage(MESSAGE_TYPES.send_feedback, {
       value: {
         message,
         from: "view"
       }
+    });
+  };
+
+  handleClickInstall = () => {
+    return this._sendMessage(MESSAGE_TYPES.install_theme, {
+      source: this.state.styleurl.gistId,
+      provider: PROVIDERS.github
     });
   };
 
@@ -180,6 +196,7 @@ class ViewStyleURLContainer extends React.Component {
         onSendFeedback={this.handleSendFeedback}
         hidden={hidden}
         onHide={this.handleHide}
+        onClickInstall={this.handleClickInstall}
         shareURL={
           this.state.styleurl &&
           buildShareURL({

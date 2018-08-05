@@ -39,7 +39,9 @@ export const MESSAGE_TYPES = {
   geT_inline_style_diff: "get_all_inline_styles",
   open_style_editor: "open_style_editor",
   open_devtools_plz: "open_devtools_plz",
-  send_feedback: "send_feedback"
+  send_feedback: "send_feedback",
+  install_theme: "install_theme",
+  uninstall_theme: "uninstall_theme"
 };
 
 export const STYLESHEET_TYPE = {

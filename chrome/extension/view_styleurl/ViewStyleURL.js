@@ -132,12 +132,9 @@ class ViewStyleURLContainer extends React.Component {
     });
   };
   handleSendFeedback = message => {
-    return this._sendMessage({
-      kind: MESSAGE_TYPES.send_feedback,
-      value: {
-        message,
-        from: "view"
-      }
+    return this._sendMessage(MESSAGE_TYPES.send_feedback, {
+      message,
+      from: "view"
     });
   };
 

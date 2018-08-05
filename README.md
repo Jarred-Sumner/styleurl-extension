@@ -2,12 +2,12 @@
 
 [StyleURL](https://www.styleurl.app) is the easiest way for developers & designers to collaborate on CSS changes. This is the source code for the Chrome extension.
 
-### What's New (v1.1.14 - August 3, 2018)
+### What's New (v1.1.15 - August 4, 2018)
 
-The bottom bar is now hidden when in print mode. Thanks whomever wrote in and flagged this issue.
+Fix bug in feedback box in ViewStyleURL bar
 
 ---
-  
+    
 ## Export CSS from Chrome
 
 Make style changes from Chrome Inspector, and StyleURL will show you the diff of your CSS changes in the page.
